@@ -1921,14 +1921,53 @@ function getPersonId(p) {
   ].join('|');
 }
 
-let huisOudsteMap = loadState(STORAGE_KEYS.HUIS_OUDSTE, {});
-let eventsList = loadState(STORAGE_KEYS.EVENTS, []);
-let attendanceMap = loadState(STORAGE_KEYS.ATTENDANCE, {});
-let contactsMap = loadState(STORAGE_KEYS.CONTACTS, {
+let huisOudsteMap = {};
+let eventsList    = [];
+let attendanceMap = {};
+let contactsMap   = {
   huiszaken: { naam: '', email: '', telefoon: '', notitie: '' },
-  klusjes: { naam: '', email: '', telefoon: '', notitie: '' },
-  bodega: { naam: '', email: '', telefoon: '', notitie: '' }
-});
+  klusjes:   { naam: '', email: '', telefoon: '', notitie: '' },
+  bodega:    { naam: '', email: '', telefoon: '', notitie: '' }
+};
+
+// ── Supabase: laad functies voor live data ────────────────────────────────────
+async function loadEvenementenFromDB() {
+  const { data } = await db.from('evenementen').select('*').order('datum');
+  return (data || []).map(r => ({
+    id: r.id, title: r.titel, date: r.datum,
+    time: r.tijd || '', location: r.locatie || '', description: r.omschrijving || ''
+  }));
+}
+
+async function loadAanwezigheidFromDB() {
+  const { data } = await db.from('aanwezigheid').select('*');
+  const map = {};
+  (data || []).forEach(r => {
+    if (!map[r.person_id]) map[r.person_id] = {};
+    map[r.person_id][r.event_id] = r.status;
+  });
+  return map;
+}
+
+async function loadContactenFromDB() {
+  const { data } = await db.from('contactpersonen').select('*');
+  const map = {
+    huiszaken: { naam: '', email: '', telefoon: '', notitie: '' },
+    klusjes:   { naam: '', email: '', telefoon: '', notitie: '' },
+    bodega:    { naam: '', email: '', telefoon: '', notitie: '' }
+  };
+  (data || []).forEach(r => {
+    map[r.rol] = { naam: r.naam || '', email: r.email || '', telefoon: r.telefoon || '', notitie: r.notitie || '' };
+  });
+  return map;
+}
+
+async function loadHuisOudsteFromDB() {
+  const { data } = await db.from('huis_oudste').select('*');
+  const map = {};
+  (data || []).forEach(r => { map[r.aankomstjaar] = r.person_id; });
+  return map;
+}
 
 function getNextEvent() {
   const now = new Date();
@@ -1951,10 +1990,11 @@ function toggleHuisOudste(p) {
   const id = getPersonId(p);
   if (huisOudsteMap[jaar] === id) {
     delete huisOudsteMap[jaar];
+    db.from('huis_oudste').delete().eq('aankomstjaar', jaar).then();
   } else {
     huisOudsteMap[jaar] = id;
+    db.from('huis_oudste').upsert({ aankomstjaar: jaar, person_id: id }).then();
   }
-  saveState(STORAGE_KEYS.HUIS_OUDSTE, huisOudsteMap);
 }
 
 function getAttendance(p, eventId) {
@@ -1966,11 +2006,12 @@ function setAttendance(p, eventId, status) {
   const id = getPersonId(p);
   if (!attendanceMap[id]) attendanceMap[id] = {};
   if (attendanceMap[id][eventId] === status) {
-    delete attendanceMap[id][eventId]; // toggle off
+    delete attendanceMap[id][eventId];
+    db.from('aanwezigheid').delete().eq('person_id', id).eq('event_id', eventId).then();
   } else {
     attendanceMap[id][eventId] = status;
+    db.from('aanwezigheid').upsert({ person_id: id, event_id: eventId, status }, { onConflict: 'person_id,event_id' }).then();
   }
-  saveState(STORAGE_KEYS.ATTENDANCE, attendanceMap);
 }
 
 function getEventStats(eventId) {
@@ -2557,7 +2598,7 @@ document.getElementById('event-form-cancel').addEventListener('click', () => {
   document.getElementById('event-form').classList.remove('open');
   document.getElementById('event-form').reset();
 });
-document.getElementById('event-form').addEventListener('submit', e => {
+document.getElementById('event-form').addEventListener('submit', async e => {
   e.preventDefault();
   const form = e.target;
   const fd = new FormData(form);
@@ -2570,18 +2611,22 @@ document.getElementById('event-form').addEventListener('submit', e => {
     description: fd.get('description') || ''
   };
   eventsList.push(newEvent);
-  saveState(STORAGE_KEYS.EVENTS, eventsList);
+  await db.from('evenementen').insert({
+    id: newEvent.id, titel: newEvent.title, datum: newEvent.date,
+    tijd: newEvent.time || null, locatie: newEvent.location || null,
+    omschrijving: newEvent.description || null
+  });
   form.reset();
   form.classList.remove('open');
   renderEvents();
-  render(); // ook personen-tab herberekenen i.v.m. volgend-event-aanwezigheid
+  render();
 });
 document.getElementById('event-list').addEventListener('click', e => {
   if (e.target.matches('.event-delete')) {
     const id = e.target.dataset.eventId;
     if (confirm('Event verwijderen? Aanwezigheid van huisgenoten voor dit event blijft bewaard.')) {
       eventsList = eventsList.filter(ev => ev.id !== id);
-      saveState(STORAGE_KEYS.EVENTS, eventsList);
+      db.from('evenementen').delete().eq('id', id).then();
       renderEvents();
       render();
     }
@@ -2671,7 +2716,13 @@ document.getElementById('contacts-grid').addEventListener('click', e => {
       telefoon: form.querySelector('[name="telefoon"]').value.trim(),
       notitie: form.querySelector('[name="notitie"]').value.trim()
     };
-    saveState(STORAGE_KEYS.CONTACTS, contactsMap);
+    db.from('contactpersonen').upsert({
+      rol: role,
+      naam: contactsMap[role].naam,
+      email: contactsMap[role].email,
+      telefoon: contactsMap[role].telefoon,
+      notitie: contactsMap[role].notitie
+    }, { onConflict: 'rol' }).then();
     renderContacts();
   }
 });
@@ -2905,7 +2956,18 @@ async function init() {
   updateAdminUI();
 
   try {
-    PEOPLE = await loadFromSupabase();
+    const [people, events, attendance, contacts, oudsten] = await Promise.all([
+      loadFromSupabase(),
+      loadEvenementenFromDB(),
+      loadAanwezigheidFromDB(),
+      loadContactenFromDB(),
+      loadHuisOudsteFromDB()
+    ]);
+    PEOPLE       = people;
+    eventsList   = events;
+    attendanceMap = attendance;
+    contactsMap  = contacts;
+    huisOudsteMap = oudsten;
   } catch(e) {
     console.error('Kon data niet laden:', e);
     alert('Kon de ledenlijst niet laden. Controleer de verbinding en ververs de pagina.');
