@@ -2479,11 +2479,11 @@ list.addEventListener('submit', async e => {
 
   const payload = {
     persoon:         personLabel,
-    aanvrager_naam:  formData.get ? formData.get('aanvrager_naam') : form.querySelector('[name="aanvrager_naam"]').value,
-    aanvrager_email: formData.get ? formData.get('aanvrager_email') : form.querySelector('[name="aanvrager_email"]').value,
+    aanvrager_naam:  form.querySelector('[name="aanvrager_naam"]').value.trim(),
+    aanvrager_email: form.querySelector('[name="aanvrager_email"]').value.trim(),
     veld:            form.querySelector('[name="veld"]').value,
-    wijziging:       form.querySelector('[name="wijziging"]').value,
-    toelichting:     form.querySelector('[name="toelichting"]')?.value || '',
+    wijziging:       form.querySelector('[name="wijziging"]').value.trim(),
+    toelichting:     form.querySelector('[name="toelichting"]')?.value.trim() || '',
   };
 
   status.textContent = 'Verzenden…';

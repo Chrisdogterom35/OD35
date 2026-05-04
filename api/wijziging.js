@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     try {
       await resend.emails.send({
-        from: 'OD35 Ledenlijst <noreply@resend.dev>',
+        from: 'OD35 Ledenlijst <onboarding@resend.dev>',
         to: adminEmails,
         subject: `Wijzigingsverzoek: ${persoon}`,
         html: `
