@@ -2636,19 +2636,33 @@ document.getElementById('event-form').addEventListener('submit', async e => {
   e.preventDefault();
   const form = e.target;
   const fd = new FormData(form);
-  const newEvent = {
-    id: 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-    title: fd.get('title'),
-    date: fd.get('date'),
-    time: fd.get('time') || '',
-    location: fd.get('location') || '',
-    description: fd.get('description') || ''
-  };
-  eventsList.push(newEvent);
-  await db.from('evenementen').insert({
-    id: newEvent.id, titel: newEvent.title, datum: newEvent.date,
-    tijd: newEvent.time || null, locatie: newEvent.location || null,
-    omschrijving: newEvent.description || null
+  const saveBtn = form.querySelector('.save-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Opslaan…';
+
+  const { data, error } = await db.from('evenementen').insert({
+    titel: fd.get('title'),
+    datum: fd.get('date'),
+    tijd: fd.get('time') || null,
+    locatie: fd.get('location') || null,
+    omschrijving: fd.get('description') || null
+  }).select().single();
+
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Opslaan';
+
+  if (error) {
+    alert('Opslaan mislukt: ' + error.message);
+    return;
+  }
+
+  eventsList.push({
+    id: data.id,
+    title: data.titel,
+    date: data.datum,
+    time: data.tijd || '',
+    location: data.locatie || '',
+    description: data.omschrijving || ''
   });
   form.reset();
   form.classList.remove('open');
