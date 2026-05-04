@@ -994,6 +994,97 @@
     border-color: var(--burgundy);
     color: var(--burgundy);
   }
+  .event-lijst-toggle {
+    background: var(--paper-warm);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .event-lijst-toggle:hover { border-color: var(--burgundy); color: var(--burgundy); }
+  .event-export-btn {
+    background: var(--moss);
+    border: 1px solid var(--moss);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .event-export-btn:hover { background: var(--burgundy-deep); border-color: var(--burgundy-deep); }
+
+  .event-deelnemers {
+    display: none;
+    grid-column: 1 / -1;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--line);
+  }
+  .event-deelnemers.open { display: block; }
+  .event-deelnemers-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 0.6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .deelnemers-summary {
+    color: var(--gray);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+  .deelnemers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .deelnemers-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray);
+    text-align: left;
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+    font-weight: 500;
+  }
+  .deelnemers-table th.center, .deelnemers-table td.center { text-align: center; }
+  .deelnemers-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+  }
+  .deelnemers-table tr:last-child td { border-bottom: none; }
+  .deelnemers-table tr.status-yes td { background: rgba(58,124,193,0.04); }
+  .deelnemers-table tr.status-no td { background: rgba(168,158,142,0.06); }
+  .deelnemers-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  .badge-yes  { background: rgba(58,124,193,0.15); color: var(--burgundy-deep); }
+  .badge-maybe{ background: rgba(91,159,214,0.15); color: var(--moss); }
+  .badge-no   { background: rgba(168,158,142,0.15); color: var(--gray); }
+  .betaald-check {
+    width: 16px; height: 16px;
+    cursor: pointer;
+    accent-color: var(--moss);
+  }
 
   /* ==================== CONTACTEN ==================== */
   .contacts-grid {
@@ -1958,6 +2049,7 @@ function getPersonId(p) {
 let huisOudsteMap = {};
 let eventsList    = [];
 let attendanceMap = {};
+let paidMap       = {};
 let contactsMap   = {
   huiszaken: { naam: '', email: '', telefoon: '', notitie: '' },
   klusjes:   { naam: '', email: '', telefoon: '', notitie: '' },
@@ -1975,12 +2067,17 @@ async function loadEvenementenFromDB() {
 
 async function loadAanwezigheidFromDB() {
   const { data } = await db.from('aanwezigheid').select('*');
-  const map = {};
+  const attendance = {};
+  const paid = {};
   (data || []).forEach(r => {
-    if (!map[r.person_id]) map[r.person_id] = {};
-    map[r.person_id][r.event_id] = r.status;
+    if (!attendance[r.person_id]) attendance[r.person_id] = {};
+    attendance[r.person_id][r.event_id] = r.status;
+    if (r.betaald) {
+      if (!paid[r.person_id]) paid[r.person_id] = {};
+      paid[r.person_id][r.event_id] = true;
+    }
   });
-  return map;
+  return { attendance, paid };
 }
 
 async function loadContactenFromDB() {
@@ -2046,6 +2143,20 @@ function setAttendance(p, eventId, status) {
     attendanceMap[id][eventId] = status;
     db.from('aanwezigheid').upsert({ person_id: id, event_id: eventId, status }, { onConflict: 'person_id,event_id' }).then();
   }
+}
+
+function setPaid(personId, eventId, value) {
+  if (!paidMap[personId]) paidMap[personId] = {};
+  paidMap[personId][eventId] = value;
+  db.from('aanwezigheid')
+    .update({ betaald: value })
+    .eq('person_id', personId)
+    .eq('event_id', eventId)
+    .then();
+}
+
+function getPaid(personId, eventId) {
+  return !!(paidMap[personId] && paidMap[personId][eventId]);
 }
 
 function getEventStats(eventId) {
@@ -2618,7 +2729,51 @@ function renderEvents() {
     html += `</div>`;
     html += `<div class="event-actions">`;
     html += `<div class="event-stats">✓${stats.yes} · ?${stats.maybe} · ✗${stats.no}</div>`;
+    html += `<button class="event-lijst-toggle" data-event-id="${escapeHtml(ev.id)}">Deelnemers</button>`;
+    html += `<button class="event-export-btn" data-event-id="${escapeHtml(ev.id)}">↓ Excel</button>`;
     html += `<button class="event-delete" data-event-id="${escapeHtml(ev.id)}">Verwijder</button>`;
+    html += `</div>`;
+
+    // Deelnemerslijst panel (hidden by default)
+    const aanwezigen = PEOPLE.filter(p => {
+      const pid = getPersonId(p);
+      return attendanceMap[pid] && attendanceMap[pid][ev.id];
+    }).sort((a, b) => {
+      const order = { yes: 0, maybe: 1, no: 2 };
+      const sa = order[attendanceMap[getPersonId(a)][ev.id]] ?? 3;
+      const sb = order[attendanceMap[getPersonId(b)][ev.id]] ?? 3;
+      if (sa !== sb) return sa - sb;
+      return (a['Achternaam'] || '').localeCompare(b['Achternaam'] || '');
+    });
+    const paidCount = aanwezigen.filter(p => getPaid(getPersonId(p), ev.id)).length;
+    const yesCount = aanwezigen.filter(p => (attendanceMap[getPersonId(p)][ev.id]) === 'yes').length;
+
+    html += `<div class="event-deelnemers" id="deelnemers-${escapeHtml(ev.id)}">`;
+    html += `<div class="event-deelnemers-header">`;
+    html += `<span>Deelnemerslijst</span>`;
+    html += `<span class="deelnemers-summary">${aanwezigen.length} opgegeven · ${yesCount} aanwezig · ${paidCount} betaald</span>`;
+    html += `</div>`;
+    if (aanwezigen.length === 0) {
+      html += `<p style="color:var(--gray);font-style:italic;font-size:0.85rem;">Nog niemand opgegeven.</p>`;
+    } else {
+      html += `<table class="deelnemers-table">`;
+      html += `<thead><tr><th>Naam</th><th>Jaar</th><th class="center">Status</th><th class="center">Betaald</th></tr></thead><tbody>`;
+      aanwezigen.forEach(p => {
+        const pid = getPersonId(p);
+        const status = attendanceMap[pid][ev.id];
+        const betaald = getPaid(pid, ev.id);
+        const naam = [p['Voorletters'], p['Tussenvoegsel'], p['Achternaam']].filter(Boolean).join(' ');
+        const badgeClass = status === 'yes' ? 'badge-yes' : status === 'maybe' ? 'badge-maybe' : 'badge-no';
+        const badgeLabel = status === 'yes' ? 'aanwezig' : status === 'maybe' ? 'misschien' : 'afwezig';
+        html += `<tr class="status-${status}">`;
+        html += `<td>${escapeHtml(naam)}</td>`;
+        html += `<td>${escapeHtml(String(p['Aankomstjaar'] || ''))}</td>`;
+        html += `<td class="center"><span class="deelnemers-badge ${badgeClass}">${badgeLabel}</span></td>`;
+        html += `<td class="center"><input type="checkbox" class="betaald-check" data-person-id="${escapeHtml(pid)}" data-event-id="${escapeHtml(ev.id)}" ${betaald ? 'checked' : ''}></td>`;
+        html += `</tr>`;
+      });
+      html += `</tbody></table>`;
+    }
     html += `</div>`;
     html += `</div>`;
   });
@@ -2679,7 +2834,87 @@ document.getElementById('event-list').addEventListener('click', e => {
       render();
     }
   }
+  if (e.target.matches('.event-lijst-toggle')) {
+    const id = e.target.dataset.eventId;
+    const panel = document.getElementById('deelnemers-' + id);
+    if (panel) panel.classList.toggle('open');
+  }
+  if (e.target.matches('.event-export-btn')) {
+    exportEventExcel(e.target.dataset.eventId);
+  }
 });
+
+document.getElementById('event-list').addEventListener('change', e => {
+  if (e.target.matches('.betaald-check')) {
+    const { personId, eventId } = e.target.dataset;
+    setPaid(personId, eventId, e.target.checked);
+    // Update summary line without full re-render
+    const panel = document.getElementById('deelnemers-' + eventId);
+    if (panel) {
+      const ev = eventsList.find(ev => ev.id === eventId);
+      if (ev) {
+        const aanwezigen = PEOPLE.filter(p => attendanceMap[getPersonId(p)]?.[eventId]);
+        const paidCount = aanwezigen.filter(p => getPaid(getPersonId(p), eventId)).length;
+        const yesCount = aanwezigen.filter(p => attendanceMap[getPersonId(p)][eventId] === 'yes').length;
+        const summary = panel.querySelector('.deelnemers-summary');
+        if (summary) summary.textContent = `${aanwezigen.length} opgegeven · ${yesCount} aanwezig · ${paidCount} betaald`;
+      }
+    }
+  }
+});
+
+function exportEventExcel(eventId) {
+  const ev = eventsList.find(e => e.id === eventId);
+  if (!ev || typeof XLSX === 'undefined') return;
+
+  const aanwezigen = PEOPLE.filter(p => {
+    const pid = getPersonId(p);
+    return attendanceMap[pid]?.[eventId];
+  }).sort((a, b) => {
+    const order = { yes: 0, maybe: 1, no: 2 };
+    const sa = order[attendanceMap[getPersonId(a)][eventId]] ?? 3;
+    const sb = order[attendanceMap[getPersonId(b)][eventId]] ?? 3;
+    if (sa !== sb) return sa - sb;
+    return (a['Achternaam'] || '').localeCompare(b['Achternaam'] || '');
+  });
+
+  const rows = aanwezigen.map(p => {
+    const pid = getPersonId(p);
+    const status = attendanceMap[pid][eventId];
+    return {
+      'Voorletters': p['Voorletters'] || '',
+      'Roepnaam': p['Roepnaam'] || '',
+      'Tussenvoegsel': p['Tussenvoegsel'] || '',
+      'Achternaam': p['Achternaam'] || '',
+      'Aankomstjaar': p['Aankomstjaar'] || '',
+      'Status': status === 'yes' ? 'Aanwezig' : status === 'maybe' ? 'Misschien' : 'Afwezig',
+      'Betaald': getPaid(pid, eventId) ? 'Ja' : 'Nee',
+      'E-mail': p['E-mail 1'] || '',
+      'Mobiel': p['Mobiel 1'] || '',
+    };
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [8,10,10,18,6,10,8,24,14].map(w => ({ wch: w }));
+  XLSX.utils.book_append_sheet(wb, ws, 'Deelnemers');
+
+  // Info blad
+  const info = [
+    { Veld: 'Event', Waarde: ev.title },
+    { Veld: 'Datum', Waarde: ev.date },
+    { Veld: 'Tijd', Waarde: ev.time || '' },
+    { Veld: 'Locatie', Waarde: ev.location || '' },
+    { Veld: 'Totaal opgegeven', Waarde: aanwezigen.length },
+    { Veld: 'Aanwezig', Waarde: aanwezigen.filter(p => attendanceMap[getPersonId(p)][eventId] === 'yes').length },
+    { Veld: 'Betaald', Waarde: aanwezigen.filter(p => getPaid(getPersonId(p), eventId)).length },
+  ];
+  const wsInfo = XLSX.utils.json_to_sheet(info);
+  XLSX.utils.book_append_sheet(wb, wsInfo, 'Info');
+
+  const safeName = ev.title.replace(/[^a-z0-9]/gi, '_').slice(0, 30);
+  XLSX.writeFile(wb, `OD35_${safeName}_${ev.date}.xlsx`);
+}
 
 // ==================== CONTACTEN ====================
 const CONTACT_ROLES = [
@@ -3011,10 +3246,11 @@ async function init() {
       loadContactenFromDB(),
       loadHuisOudsteFromDB()
     ]);
-    PEOPLE       = people;
-    eventsList   = events;
-    attendanceMap = attendance;
-    contactsMap  = contacts;
+    PEOPLE        = people;
+    eventsList    = events;
+    attendanceMap = attendance.attendance;
+    paidMap       = attendance.paid;
+    contactsMap   = contacts;
     huisOudsteMap = oudsten;
   } catch(e) {
     console.error('Kon data niet laden:', e);
