@@ -1,0 +1,3110 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oude Delft 35 — Oud-Huisgenoten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1812;
+    --paper: #faf6ec;
+    --paper-warm: #f1ead8;
+    --burgundy: #3a7cc1;
+    --burgundy-deep: #2563a8;
+    --gold: #5b9fd6;
+    --gold-soft: #7db8e8;
+    --moss: #1a5fa0;
+    --gray: #6b6358;
+    --gray-light: #a89e8e;
+    --line: rgba(26, 24, 18, 0.18);
+    --line-soft: rgba(26, 24, 18, 0.08);
+    --highlight: #deeeff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* subtle background tint */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(184, 134, 11, 0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(30, 58, 95, 0.025) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 2.5rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 .ampersand {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--burgundy);
+  }
+
+  .subtitle {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 1.3rem;
+    color: var(--gray);
+    margin-bottom: 1.5rem;
+  }
+
+  .ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0 0;
+    color: var(--gold);
+  }
+
+  .ornament .line {
+    width: 3rem;
+    height: 1px;
+    background: currentColor;
+  }
+
+  .ornament .diamond {
+    font-size: 0.6rem;
+    transform: rotate(45deg);
+    width: 6px; height: 6px;
+    background: currentColor;
+  }
+
+  .stats {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .stat-line {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.05rem;
+    color: var(--gray);
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+  .stat-line strong {
+    color: var(--burgundy);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  /* CONTROLS */
+  .controls {
+    background: var(--paper-warm);
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 1rem;
+    align-items: center;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  @media (max-width: 720px) {
+    .controls { grid-template-columns: 1fr; }
+  }
+
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap::before {
+    content: '⌕';
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray);
+    font-size: 1.3rem;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus {
+    border-color: var(--burgundy);
+    box-shadow: inset 0 0 0 1px var(--burgundy);
+  }
+
+  .search-input::placeholder {
+    color: var(--gray-light);
+    font-style: italic;
+  }
+
+  .filter-select {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 0.75rem 0.9rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .filter-select:focus { border-color: var(--burgundy); }
+
+  .reset-btn {
+    background: var(--ink);
+    color: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 0.75rem 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { background: var(--burgundy); border-color: var(--burgundy); }
+
+  .results-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    margin-bottom: 1rem;
+    padding-left: 0.25rem;
+  }
+
+  .results-count strong {
+    color: var(--burgundy);
+    font-weight: 500;
+  }
+
+  /* PERSON LIST */
+  .person-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--line);
+  }
+
+  .person {
+    border-bottom: 1px solid var(--line-soft);
+    transition: background 0.15s;
+  }
+
+  .person:hover { background: var(--paper-warm); }
+
+  .person.expanded {
+    background: var(--paper-warm);
+    border-left: 3px solid var(--burgundy);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .person.deceased { opacity: 0.55; font-style: italic; }
+  .person.deceased .person-name { color: var(--gray); }
+
+  .person-summary {
+    display: grid;
+    grid-template-columns: 5rem 1fr 8rem 2rem;
+    gap: 1.5rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    align-items: baseline;
+    user-select: none;
+  }
+
+  @media (max-width: 720px) {
+    .person-summary { grid-template-columns: 4.5rem 1fr 2rem; gap: 0.75rem; }
+    .person-jaar-pill { display: none !important; }
+  }
+
+  .person-jaar {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--burgundy);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .person-jaar.empty { color: var(--gray-light); }
+
+  .person-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .person-name .voorletters {
+    color: var(--gray);
+    font-weight: 400;
+    margin-right: 0.4em;
+  }
+
+  .person-name .tussenvoegsel {
+    font-style: italic;
+    color: var(--gray);
+    font-weight: 400;
+  }
+
+  .person-name .roepnaam {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--gold);
+    margin-left: 0.5em;
+  }
+
+  .person-jaar-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gray);
+    text-align: right;
+    letter-spacing: 0.05em;
+  }
+
+  .person-toggle {
+    color: var(--gray);
+    font-size: 1.1rem;
+    transition: transform 0.25s;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .person.expanded .person-toggle {
+    transform: rotate(180deg);
+    color: var(--burgundy);
+  }
+
+  /* DETAILS */
+  .person-details {
+    display: none;
+    padding: 0.5rem 1.25rem 1.75rem 1.25rem;
+    background: var(--paper-warm);
+  }
+
+  .person.expanded .person-details {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem 2rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .detail-section h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .detail-section h3::before {
+    content: '§';
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--gold);
+  }
+
+  .detail-row {
+    display: grid;
+    grid-template-columns: minmax(80px, auto) 1fr;
+    gap: 0.6rem 1rem;
+    padding: 0.3rem 0;
+    font-size: 0.92rem;
+    align-items: baseline;
+  }
+
+  .detail-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gray);
+    letter-spacing: 0.05em;
+  }
+
+  .detail-value {
+    color: var(--ink);
+    word-break: break-word;
+  }
+
+  .detail-value a {
+    color: var(--burgundy);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--burgundy);
+    transition: all 0.2s;
+  }
+
+  .detail-value a:hover {
+    background: var(--highlight);
+    border-bottom-style: solid;
+  }
+
+  .source-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gray-light);
+    margin-left: 0.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .multi-value {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .multi-value-item {
+    line-height: 1.4;
+  }
+
+  .deceased-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray);
+    border: 1px solid var(--gray-light);
+    padding: 0.15rem 0.5rem;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .meta-strip {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gray);
+    letter-spacing: 0.05em;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray);
+  }
+
+  .empty-state .icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 4rem;
+    color: var(--gold-soft);
+    margin-bottom: 1rem;
+  }
+
+  .empty-state p {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.3rem;
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--ink);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+
+  footer .ornament-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--burgundy);
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+
+  /* Highlight matches */
+  .match-highlight {
+    background: var(--highlight);
+    padding: 0 2px;
+    border-radius: 1px;
+  }
+
+  /* alphabet jump */
+  .alphabet {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .alpha-btn {
+    width: 1.8rem; height: 1.8rem;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gray);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  .alpha-btn:hover:not(:disabled) {
+    background: var(--paper-warm);
+    color: var(--burgundy);
+    border-color: var(--line);
+  }
+
+  .alpha-btn.active {
+    background: var(--burgundy);
+    color: var(--paper);
+    border-color: var(--burgundy);
+  }
+
+  .alpha-btn:disabled {
+    color: var(--gray-light);
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* WIJZIGINGSFORMULIER */
+  .change-request { margin-top: 1.25rem; }
+  .change-toggle-btn {
+    background: transparent; border: 1px dashed var(--burgundy); color: var(--burgundy);
+    padding: 0.6rem 1.2rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 0.6rem;
+  }
+  .change-toggle-btn::before { content: '\2710'; font-size: 0.95rem; }
+  .change-toggle-btn:hover { background: var(--burgundy); color: var(--paper); border-style: solid; }
+
+  .change-form {
+    display: none; margin-top: 1rem; padding: 1.5rem;
+    background: var(--paper); border: 1px solid var(--burgundy);
+    border-left: 3px solid var(--burgundy); animation: fadeIn 0.3s ease;
+  }
+  .change-form.open { display: block; }
+  .change-form h4 {
+    font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.4rem;
+    font-weight: 600; color: var(--burgundy); margin-bottom: 0.3rem;
+  }
+  .change-form p.intro {
+    font-family: 'Lora', Georgia, serif; font-style: italic;
+    color: var(--gray); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.5;
+  }
+
+  .form-row {
+    margin-bottom: 1rem; display: grid;
+    grid-template-columns: 1fr 1fr; gap: 1rem;
+  }
+  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+  .form-field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field label {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray);
+  }
+  .form-field input, .form-field select, .form-field textarea {
+    background: var(--paper-warm); border: 1px solid var(--line);
+    padding: 0.6rem 0.75rem; font-family: 'Lora', Georgia, serif;
+    font-size: 0.95rem; color: var(--ink); outline: none;
+    transition: border-color 0.2s; width: 100%;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    border-color: var(--burgundy); background: var(--paper);
+  }
+  .form-field textarea { resize: vertical; min-height: 80px; }
+  .form-field select { cursor: pointer; }
+
+  .form-actions {
+    display: flex; gap: 0.75rem; align-items: center;
+    margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed var(--line);
+  }
+  .submit-btn {
+    background: var(--burgundy); color: var(--paper); border: 1px solid var(--burgundy);
+    padding: 0.7rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .submit-btn:hover { background: var(--burgundy-deep); border-color: var(--burgundy-deep); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .cancel-btn {
+    background: transparent; color: var(--gray); border: 1px solid var(--line);
+    padding: 0.7rem 1.2rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .cancel-btn:hover { color: var(--ink); border-color: var(--ink); }
+
+  .form-status {
+    font-family: 'Lora', Georgia, serif; font-style: italic;
+    font-size: 0.9rem; margin-left: auto;
+  }
+  .form-status.success { color: var(--moss); }
+  .form-status.error { color: var(--burgundy); }
+  .form-status.sending { color: var(--gray); }
+
+  .form-success { text-align: center; padding: 2rem 1rem; }
+  .form-success .icon {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 3rem; color: var(--moss); margin-bottom: 0.5rem;
+  }
+  .form-success h4 { color: var(--moss); margin-bottom: 0.5rem; }
+  .form-success p { color: var(--gray); font-style: italic; }
+
+
+  /* ==================== TABS ==================== */
+  .tab-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 2.5rem;
+    margin-top: -1rem;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 0.85rem 1.5rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--gray);
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    margin-bottom: -2px;
+  }
+  .tab-btn:hover {
+    color: var(--burgundy);
+  }
+  .tab-btn.active {
+    color: var(--burgundy);
+    border-bottom-color: var(--burgundy);
+    font-weight: 600;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ==================== EXPORT BUTTON ==================== */
+  .export-btn {
+    background: var(--burgundy);
+    color: var(--paper);
+    border: none;
+    padding: 0.6rem 1.1rem;
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .export-btn:hover { background: var(--burgundy-deep); }
+  .export-btn::before {
+    content: '⬇';
+    font-size: 0.95rem;
+  }
+
+  /* ==================== HUIS OUDSTE STER ==================== */
+  .oudste-star {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    fill: #8b0000;
+    vertical-align: 0.05em;
+    margin-right: 0.4em;
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.15));
+  }
+  .huis-oudste-toggle {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--gray);
+    padding: 0.4rem 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+  .huis-oudste-toggle::before {
+    content: '';
+    display: inline-block;
+    width: 0.85em;
+    height: 0.85em;
+    background-color: currentColor;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><polygon points='12,2 14.9,8.9 22.4,9.5 16.7,14.4 18.5,21.7 12,17.7 5.5,21.7 7.3,14.4 1.6,9.5 9.1,8.9'/></svg>") center/contain no-repeat;
+            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><polygon points='12,2 14.9,8.9 22.4,9.5 16.7,14.4 18.5,21.7 12,17.7 5.5,21.7 7.3,14.4 1.6,9.5 9.1,8.9'/></svg>") center/contain no-repeat;
+  }
+  .huis-oudste-toggle:hover {
+    border-color: #8b0000;
+    color: #8b0000;
+  }
+  .huis-oudste-toggle.active {
+    background: #8b0000;
+    color: white;
+    border-color: #8b0000;
+  }
+
+  /* ==================== AANWEZIGHEID ==================== */
+  .attendance-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(184, 134, 11, 0.05);
+    border-left: 3px solid var(--gold);
+    border-radius: 2px;
+  }
+  .attendance-section h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--burgundy);
+  }
+  .attendance-event-name {
+    font-style: italic;
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+  .attendance-options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .attendance-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    padding: 0.45rem 0.85rem;
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    color: var(--ink);
+  }
+  .attendance-btn:hover { border-color: var(--burgundy); }
+  .attendance-btn.active.yes {
+    background: var(--moss);
+    color: white;
+    border-color: var(--moss);
+  }
+  .attendance-btn.active.no {
+    background: var(--burgundy);
+    color: white;
+    border-color: var(--burgundy);
+  }
+  .attendance-btn.active.maybe {
+    background: var(--gold);
+    color: white;
+    border-color: var(--gold);
+  }
+
+  /* ==================== AGENDA ==================== */
+  .agenda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .agenda-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  .event-form-toggle {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 0.6rem 1.1rem;
+    font-family: 'Lora', serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .event-form-toggle:hover { background: var(--burgundy); }
+  .event-form {
+    display: none;
+    background: var(--paper-warm);
+    padding: 1.5rem;
+    border-left: 3px solid var(--burgundy);
+    margin-bottom: 2rem;
+    border-radius: 2px;
+  }
+  .event-form.open { display: block; }
+  .event-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .event-form label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 0.3rem;
+  }
+  .event-form input, .event-form textarea {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    font-family: 'Lora', serif;
+    font-size: 0.95rem;
+    border-radius: 2px;
+  }
+  .event-form input:focus, .event-form textarea:focus {
+    outline: none;
+    border-color: var(--burgundy);
+  }
+  .event-form textarea { min-height: 70px; resize: vertical; }
+  .event-form .form-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .event-form button {
+    padding: 0.55rem 1rem;
+    border: none;
+    cursor: pointer;
+    font-family: 'Lora', serif;
+    font-size: 0.9rem;
+    border-radius: 2px;
+  }
+  .event-form .save-btn {
+    background: var(--burgundy);
+    color: var(--paper);
+  }
+  .event-form .cancel-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink);
+  }
+
+  .event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .event-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--burgundy);
+    padding: 1.25rem 1.5rem;
+    border-radius: 2px;
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: 1.25rem;
+    align-items: center;
+  }
+  .event-card.next-event {
+    border-left-color: var(--gold);
+    background: linear-gradient(to right, rgba(184, 134, 11, 0.08), var(--paper) 30%);
+    box-shadow: 0 1px 4px rgba(184, 134, 11, 0.15);
+  }
+  .event-card.past {
+    opacity: 0.55;
+    border-left-color: var(--gray-light);
+  }
+  .event-date {
+    text-align: center;
+    border-right: 1px solid var(--line);
+    padding-right: 1rem;
+  }
+  .event-date .day {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--burgundy);
+  }
+  .event-date .month {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--gray);
+    margin-top: 0.3rem;
+  }
+  .event-date .year {
+    font-size: 0.75rem;
+    color: var(--gray-light);
+    margin-top: 0.15rem;
+  }
+  .event-info h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+  .event-info .next-pill {
+    display: inline-block;
+    background: var(--gold);
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+    vertical-align: 0.15em;
+  }
+  .event-info .location {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-bottom: 0.35rem;
+  }
+  .event-info .description {
+    font-size: 0.92rem;
+    color: var(--ink);
+    font-style: italic;
+  }
+  .event-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    align-items: flex-end;
+  }
+  .event-stats {
+    font-size: 0.8rem;
+    color: var(--gray);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .event-delete {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--gray);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .event-delete:hover {
+    border-color: var(--burgundy);
+    color: var(--burgundy);
+  }
+
+  /* ==================== CONTACTEN ==================== */
+  .contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .contact-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    border-radius: 3px;
+    border-top: 4px solid var(--burgundy);
+    position: relative;
+  }
+  .contact-card .role-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+  }
+  .contact-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  .contact-card .role-desc {
+    font-size: 0.85rem;
+    color: var(--gray);
+    font-style: italic;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+  }
+  .contact-card .contact-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--burgundy);
+    margin-bottom: 0.4rem;
+    min-height: 1.5em;
+  }
+  .contact-card .contact-name.empty {
+    color: var(--gray-light);
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .contact-card .contact-detail {
+    font-size: 0.9rem;
+    color: var(--ink);
+    margin-bottom: 0.2rem;
+  }
+  .contact-card .contact-detail a { color: var(--burgundy); text-decoration: none; }
+  .contact-card .contact-detail a:hover { text-decoration: underline; }
+  .contact-card .edit-btn {
+    margin-top: 1rem;
+    background: transparent;
+    border: 1px solid var(--line);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: 'Lora', serif;
+    color: var(--gray);
+  }
+  .contact-card .edit-btn:hover {
+    border-color: var(--burgundy);
+    color: var(--burgundy);
+  }
+  .contact-edit-form {
+    display: none;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line-soft);
+  }
+  .contact-edit-form.open { display: block; }
+  .contact-edit-form input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--line);
+    background: var(--paper-warm);
+    font-family: 'Lora', serif;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    border-radius: 2px;
+  }
+  .contact-edit-form .form-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .contact-edit-form button {
+    padding: 0.4rem 0.85rem;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-radius: 2px;
+    font-family: 'Lora', serif;
+  }
+  .contact-edit-form .save-btn { background: var(--burgundy); color: var(--paper); }
+  .contact-edit-form .cancel-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--gray);
+  }
+
+  /* ==================== GESCHIEDENIS ==================== */
+  .history-content {
+    max-width: 780px;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+  .history-content h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.4rem;
+    color: var(--burgundy);
+  }
+  .history-content .lead {
+    text-align: center;
+    font-style: italic;
+    color: var(--gray);
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .history-content h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 0.85rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line-soft);
+    padding-bottom: 0.4rem;
+  }
+  .history-content p {
+    margin-bottom: 1.2rem;
+    text-align: justify;
+    hyphens: auto;
+  }
+  .history-content .pull-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.4rem;
+    text-align: center;
+    color: var(--burgundy);
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    padding: 1.5rem 1rem;
+    margin: 2rem 0;
+    line-height: 1.4;
+  }
+  .history-content .timeline {
+    margin: 2rem 0;
+    border-left: 2px solid var(--burgundy);
+    padding-left: 1.5rem;
+  }
+  .history-content .timeline-item {
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+  .history-content .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.85rem;
+    top: 0.4em;
+    width: 10px;
+    height: 10px;
+    background: var(--gold);
+    border-radius: 50%;
+    border: 2px solid var(--paper);
+  }
+  .history-content .timeline-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--burgundy);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .history-content .timeline-text {
+    font-size: 0.98rem;
+  }
+  .history-edit-btn {
+    display: block;
+    margin: 2rem auto 0;
+    background: transparent;
+    border: 1px solid var(--line);
+    padding: 0.5rem 1rem;
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    color: var(--gray);
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .history-edit-btn:hover {
+    border-color: var(--burgundy);
+    color: var(--burgundy);
+  }
+  .history-editor {
+    display: none;
+    margin-top: 1.5rem;
+  }
+  .history-editor.open { display: block; }
+  .history-editor textarea {
+    width: 100%;
+    min-height: 500px;
+    padding: 1rem;
+    font-family: 'Lora', serif;
+    font-size: 0.95rem;
+    border: 1px solid var(--line);
+    background: var(--paper-warm);
+    border-radius: 2px;
+    line-height: 1.6;
+  }
+  .history-editor .editor-help {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+  .history-editor .editor-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  @media (max-width: 700px) {
+    .event-card {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+    .event-date {
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.75rem;
+      padding-right: 0;
+      text-align: left;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .event-date .day { font-size: 1.4rem; }
+    .event-actions { align-items: flex-start; }
+    .event-form .form-row { grid-template-columns: 1fr; }
+    .tab-btn { padding: 0.6rem 0.9rem; font-size: 1rem; }
+  }
+
+
+  /* ==================== ADMIN ==================== */
+  .admin-bar {
+    background: var(--burgundy); color: var(--paper);
+    padding: 0.6rem 1.25rem;
+    display: none; align-items: center; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+  }
+  .admin-bar.visible { display: flex; }
+  .admin-bar button {
+    background: rgba(255,255,255,0.15); color: var(--paper);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.35rem 0.75rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; cursor: pointer;
+  }
+  .admin-bar button:hover { background: rgba(255,255,255,0.28); }
+  .admin-fab {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--ink); color: var(--paper);
+    border: none; border-radius: 50%;
+    width: 2.8rem; height: 2.8rem; font-size: 1.1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25); transition: background 0.2s; z-index: 1000;
+  }
+  .admin-fab:hover { background: var(--burgundy-deep); }
+  .admin-fab.logged-in { background: var(--burgundy); }
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,24,18,0.65);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; padding: 1rem;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-box {
+    background: var(--paper); border: 2px solid var(--ink);
+    padding: 2rem; max-width: 460px; width: 100%;
+    box-shadow: 5px 5px 0 var(--ink);
+  }
+  .modal-box.wide { max-width: 680px; max-height: 92vh; overflow-y: auto; }
+  .modal-box h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem; font-weight: 600; color: var(--burgundy); margin-bottom: 0.25rem;
+  }
+  .modal-sub { font-style: italic; color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .modal-close {
+    float: right; background: transparent; border: none;
+    font-size: 1.5rem; color: var(--gray); cursor: pointer; line-height: 1; margin-left: 1rem;
+  }
+  .modal-close:hover { color: var(--ink); }
+  .mf-section {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+    letter-spacing: 0.25em; text-transform: uppercase; color: var(--burgundy);
+    margin: 1.25rem 0 0.6rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--gold);
+  }
+  .mf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+  @media(max-width:500px){.mf-grid{grid-template-columns:1fr;}}
+  .mf-field { display: flex; flex-direction: column; gap: 0.25rem; }
+  .mf-field.span2 { grid-column: span 2; }
+  @media(max-width:500px){.mf-field.span2{grid-column:span 1;}}
+  .mf-field label {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.63rem;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray);
+  }
+  .mf-field input, .mf-field select {
+    background: var(--paper-warm); border: 1px solid var(--line);
+    padding: 0.52rem 0.7rem; font-family: 'Lora', serif;
+    font-size: 0.95rem; color: var(--ink); outline: none; width: 100%;
+    transition: border-color 0.2s;
+  }
+  .mf-field input:focus, .mf-field select:focus {
+    border-color: var(--burgundy); background: var(--paper);
+  }
+  .mf-actions { display: flex; gap: 0.6rem; margin-top: 1.5rem; }
+  .mf-save {
+    background: var(--burgundy); color: var(--paper); border: none;
+    padding: 0.65rem 1.4rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer;
+    flex: 1;
+  }
+  .mf-save:hover { background: var(--burgundy-deep); }
+  .mf-save:disabled { opacity: 0.5; cursor: not-allowed; }
+  .mf-cancel {
+    background: transparent; color: var(--gray); border: 1px solid var(--line);
+    padding: 0.65rem 1rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer;
+  }
+  .mf-cancel:hover { color: var(--ink); border-color: var(--ink); }
+  .admin-person-actions {
+    display: flex; gap: 0.5rem; margin-bottom: 1rem;
+    padding-bottom: 1rem; border-bottom: 1px dashed var(--line);
+  }
+  .admin-edit-btn {
+    background: var(--burgundy); color: var(--paper); border: none;
+    padding: 0.42rem 0.9rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  }
+  .admin-edit-btn:hover { background: var(--burgundy-deep); }
+  .admin-delete-btn {
+    background: transparent; color: #c0392b; border: 1px solid #c0392b;
+    padding: 0.42rem 0.9rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  }
+  .admin-delete-btn:hover { background: #c0392b; color: white; }
+  .login-field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.9rem; }
+  .login-field label {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray);
+  }
+  .login-field input {
+    background: var(--paper-warm); border: 1px solid var(--line);
+    padding: 0.65rem 0.8rem; font-family: 'Lora', serif;
+    font-size: 1rem; color: var(--ink); outline: none; width: 100%;
+  }
+  .login-field input:focus { border-color: var(--burgundy); background: var(--paper); }
+  .login-btn {
+    width: 100%; background: var(--burgundy); color: var(--paper); border: none;
+    padding: 0.75rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; margin-top: 0.5rem;
+  }
+  .login-btn:hover { background: var(--burgundy-deep); }
+  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .login-error { color: #c0392b; font-style: italic; font-size: 0.88rem; margin-top: 0.5rem; }
+
+
+  /* ==================== LOGO ==================== */
+  .house-logo {
+    display: block;
+    margin: 0 auto 1.75rem;
+    height: 90px;
+    width: auto;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08));
+  }
+
+  /* ==================== CONTACT PICKER ==================== */
+  .picker-label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 0.3rem;
+  }
+  .person-picker {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--burgundy);
+    border-left: 3px solid var(--burgundy);
+    padding: 0.6rem 0.75rem;
+    font-family: 'Lora', Georgia, serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    cursor: pointer;
+    margin-bottom: 0.75rem;
+  }
+  .picker-or {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--gray-light);
+    text-align: center;
+    margin: 0.5rem 0;
+  }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="container">
+
+
+<header>
+  <img src="logo_od35.png" alt="OD35" class="house-logo">
+  <div class="eyebrow">Oude Delft 35 · sedert 1891</div>
+  <h1>Oud-Huisgenoten</h1>
+  <p class="subtitle">Het adresboek van alle oud-huisgenoten van Oude Delft 35</p>
+  <div class="stats" id="stats"></div>
+</header>
+
+<div id="admin-bar" class="admin-bar">
+  <span>⚙ Admin: <span class="admin-email"></span></span>
+  <div style="display:flex;gap:0.5rem;">
+    <button id="add-person-btn">+ Persoon toevoegen</button>
+    <button id="admin-logout-btn">Uitloggen</button>
+  </div>
+</div>
+
+<nav class="tab-nav" id="tab-nav">
+  <button class="tab-btn active" data-tab="personen">Personen</button>
+  <button class="tab-btn" data-tab="agenda">Agenda</button>
+  <button class="tab-btn" data-tab="contacten">Contacten</button>
+  <button class="tab-btn" data-tab="geschiedenis">Geschiedenis</button>
+</nav>
+
+<!-- ==================== TAB: PERSONEN ==================== -->
+<div class="tab-panel active" id="panel-personen">
+
+<div class="controls">
+  <div class="search-wrap">
+    <input type="text" id="search" class="search-input" placeholder="Zoek op naam, jaartal, e-mail, plaats…" autocomplete="off">
+  </div>
+  <select id="jaar-filter" class="filter-select">
+    <option value="">Alle jaargangen</option>
+  </select>
+  <select id="status-filter" class="filter-select">
+    <option value="">Iedereen</option>
+    <option value="levend">Levenden</option>
+    <option value="overleden">Overledenen</option>
+    <option value="huis-oudste">Huis Oudsten</option>
+  </select>
+  <button id="reset" class="reset-btn">Reset</button>
+  <button id="export-excel" class="export-btn" title="Exporteer alle data naar Excel">Excel export</button>
+</div>
+
+<div class="alphabet" id="alphabet"></div>
+
+<div class="results-count" id="results-count"></div>
+
+<div class="person-list" id="person-list"></div>
+
+</div><!-- /panel-personen -->
+
+<!-- ==================== TAB: AGENDA ==================== -->
+<div class="tab-panel" id="panel-agenda">
+  <div class="agenda-header">
+    <div>
+      <h2>Agenda</h2>
+      <p style="color:var(--gray); font-style:italic; margin-top:0.25rem;">Aankomende reünies, lustra en huisgebeurtenissen</p>
+    </div>
+    <button class="event-form-toggle" id="event-form-toggle">+ Nieuw event</button>
+  </div>
+
+  <form class="event-form" id="event-form">
+    <div class="form-row">
+      <div>
+        <label>Titel</label>
+        <input type="text" name="title" required placeholder="Bijv. Oud-huisgenoten dag 2026">
+      </div>
+      <div>
+        <label>Datum</label>
+        <input type="date" name="date" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Tijd (optioneel)</label>
+        <input type="time" name="time">
+      </div>
+      <div>
+        <label>Locatie</label>
+        <input type="text" name="location" placeholder="Bijv. Oude Delft 35, Delft">
+      </div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label>Omschrijving (optioneel)</label>
+      <textarea name="description" placeholder="Korte toelichting over het event…"></textarea>
+    </div>
+    <div class="form-buttons">
+      <button type="submit" class="save-btn">Opslaan</button>
+      <button type="button" class="cancel-btn" id="event-form-cancel">Annuleren</button>
+    </div>
+  </form>
+
+  <div class="event-list" id="event-list"></div>
+</div><!-- /panel-agenda -->
+
+<!-- ==================== TAB: CONTACTEN ==================== -->
+<div class="tab-panel" id="panel-contacten">
+  <div style="text-align:center; margin-bottom:2rem;">
+    <h2 style="font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:600; margin-bottom:0.3rem;">Contactpersonen</h2>
+    <p style="color:var(--gray); font-style:italic;">Voor vragen, klusjes en bodega-zaken</p>
+  </div>
+  <div class="contacts-grid" id="contacts-grid"></div>
+</div><!-- /panel-contacten -->
+
+<!-- ==================== TAB: GESCHIEDENIS ==================== -->
+<div class="tab-panel" id="panel-geschiedenis">
+  <div class="history-content" id="history-content"></div>
+  <button class="history-edit-btn" id="history-edit-btn">Geschiedenis bewerken</button>
+  <div class="history-editor" id="history-editor">
+    <p class="editor-help">Tip: gebruik dubbele regelafstand voor nieuwe paragrafen. Begin een regel met <code>## Titel</code> voor een kop, of <code>&gt; quote</code> voor een uitgelichte zin.</p>
+    <textarea id="history-textarea"></textarea>
+    <div class="editor-buttons">
+      <button class="save-btn" id="history-save" style="background:var(--burgundy); color:var(--paper); padding:0.5rem 1rem; border:none; cursor:pointer; border-radius:2px; font-family:'Lora',serif;">Opslaan</button>
+      <button class="cancel-btn" id="history-cancel" style="background:transparent; border:1px solid var(--line); color:var(--gray); padding:0.5rem 1rem; cursor:pointer; border-radius:2px; font-family:'Lora',serif;">Annuleren</button>
+      <button class="reset-btn" id="history-reset" style="background:transparent; border:1px solid var(--line); color:var(--gray); padding:0.5rem 1rem; cursor:pointer; border-radius:2px; font-family:'Lora',serif; margin-left:auto;">Standaardtekst herstellen</button>
+    </div>
+  </div>
+</div><!-- /panel-geschiedenis -->
+
+<footer>
+  Oude Delft 35 · oud-huisgenoten register · 401 personen · 1896–2024
+</footer>
+
+</div>
+
+<script>
+// === Configuratie wijzigingsformulier ===
+// VERVANG deze URL met je eigen Formspree endpoint:
+//   1. Ga naar https://formspree.io en maak een gratis account aan
+//   2. Maak een nieuw formulier aan; je krijgt een URL als: https://formspree.io/f/xyzabcde
+//   3. Vervang de URL hieronder met die van jou
+//   4. Alternatief: gebruik Google Forms, Netlify Forms, Web3Forms, etc.
+const FORM_ENDPOINT = '/api/wijziging';
+
+// ── Supabase configuratie ────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://mxbtmbcgycjqapjzulrp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YnRtYmNneWNqcWFwanp1bHJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDQ4MzgsImV4cCI6MjA5MzQ4MDgzOH0.6Qowa_mqhH7YtrljF5fZnQzUaG_u4N5TodcnLzRhYSM';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Supabase rij → persoon object (Dutch veldnamen)
+function dbRowToPerson(row) {
+  const p = {
+    _id: row.id,
+    'Achternaam':          row.achternaam || '',
+    'Tussenvoegsel':       row.tussenvoegsel || '',
+    'Voorletters':         row.voorletters || '',
+    'Voornaam':            row.voornaam || '',
+    'Roepnaam':            row.roepnaam || '',
+    'Titel':               row.titel || '',
+    'Aankomstjaar':        row.aankomstjaar || null,
+    'Geboortejaar':        row.geboortejaar || null,
+    'Geboortemaand':       row.geboortemaand || null,
+    'Geboortedag':         row.geboortedag || null,
+    'Plaats van herkomst': row.plaats_van_herkomst || '',
+    'Adres 1':             row.adres_1 || '',
+    'Adres 2':             row.adres_2 || '',
+    'Adres 3':             row.adres_3 || '',
+    'Adres 4':             row.adres_4 || '',
+    'Postcode':            row.postcode || '',
+    'Plaats':              row.plaats || '',
+    'Land':                row.land || '',
+    'E-mail 1':            row.email_1 || '',
+    'E-mail 2':            row.email_2 || '',
+    'E-mail 3':            row.email_3 || '',
+    'Mobiel 1':            row.mobiel_1 || '',
+    'Mobiel 2':            row.mobiel_2 || '',
+    'Mobiel 3':            row.mobiel_3 || '',
+    'Mobiel 4':            row.mobiel_4 || '',
+  };
+  if (row.overleden) p['Status'] = 'Overleden';
+  return p;
+}
+
+// Persoon object → Supabase rij
+function personToDbRow(p) {
+  return {
+    achternaam:           (p['Achternaam'] || '').trim(),
+    tussenvoegsel:        p['Tussenvoegsel'] || null,
+    voorletters:          p['Voorletters'] || null,
+    voornaam:             p['Voornaam'] || null,
+    roepnaam:             p['Roepnaam'] || null,
+    titel:                p['Titel'] || null,
+    aankomstjaar:         p['Aankomstjaar'] ? Number(p['Aankomstjaar']) : null,
+    geboortejaar:         p['Geboortejaar'] ? Number(p['Geboortejaar']) : null,
+    geboortemaand:        p['Geboortemaand'] ? Number(p['Geboortemaand']) : null,
+    geboortedag:          p['Geboortedag'] ? Number(p['Geboortedag']) : null,
+    plaats_van_herkomst:  p['Plaats van herkomst'] || null,
+    adres_1:              p['Adres 1'] || null,
+    adres_2:              p['Adres 2'] || null,
+    adres_3:              p['Adres 3'] || null,
+    adres_4:              p['Adres 4'] || null,
+    postcode:             p['Postcode'] || null,
+    plaats:               p['Plaats'] || null,
+    land:                 p['Land'] || null,
+    email_1:              p['E-mail 1'] || null,
+    email_2:              p['E-mail 2'] || null,
+    email_3:              p['E-mail 3'] || null,
+    mobiel_1:             p['Mobiel 1'] || null,
+    mobiel_2:             p['Mobiel 2'] || null,
+    mobiel_3:             p['Mobiel 3'] || null,
+    mobiel_4:             p['Mobiel 4'] || null,
+    overleden:            p['Status'] === 'Overleden',
+  };
+}
+
+async function loadFromSupabase() {
+  const { data, error } = await db
+    .from('personen')
+    .select('*')
+    .order('aankomstjaar', { ascending: false })
+    .order('achternaam');
+  if (error) throw error;
+  return (data || []).map(dbRowToPerson);
+}
+
+async function saveNewPerson(p) {
+  const row = personToDbRow(p);
+  const { data, error } = await db.from('personen').insert(row).select().single();
+  if (error) throw error;
+  return dbRowToPerson(data);
+}
+
+async function updatePerson(id, p) {
+  const row = personToDbRow(p);
+  const { data, error } = await db.from('personen').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return dbRowToPerson(data);
+}
+
+async function deletePerson(id) {
+  const { error } = await db.from('personen').delete().eq('id', id);
+  if (error) { alert('Fout bij verwijderen: ' + error.message); return; }
+  PEOPLE = PEOPLE.filter(x => String(x._id) !== String(id));
+  render();
+}
+
+// ── Admin state ───────────────────────────────────────────────────────────────
+let adminUser = null;
+function isAdmin() { return !!adminUser; }
+
+function updateAdminUI() {
+  const bar = document.getElementById('admin-bar');
+  const fab = document.getElementById('admin-fab');
+  if (!bar || !fab) return;
+  if (adminUser) {
+    bar.classList.add('visible');
+    const emailEl = bar.querySelector('.admin-email');
+    if (emailEl) emailEl.textContent = adminUser.email;
+    fab.classList.add('logged-in');
+    fab.title = 'Admin uitloggen';
+  } else {
+    bar.classList.remove('visible');
+    fab.classList.remove('logged-in');
+    fab.title = 'Admin inloggen';
+  }
+}
+
+// ── Admin: persoon modal ──────────────────────────────────────────────────────
+function openPersonModal(existingPerson) {
+  const modal = document.getElementById('person-modal');
+  const form  = document.getElementById('person-form');
+  const title = document.getElementById('person-modal-title');
+  const saveBtn = document.getElementById('person-save-btn');
+
+  title.textContent = existingPerson ? 'Persoon bewerken' : 'Persoon toevoegen';
+  form.reset();
+
+  // Pre-fill if editing
+  if (existingPerson) {
+    const fields = {
+      'pf-achternaam': existingPerson['Achternaam'],
+      'pf-tussenvoegsel': existingPerson['Tussenvoegsel'],
+      'pf-voorletters': existingPerson['Voorletters'],
+      'pf-voornaam': existingPerson['Voornaam'],
+      'pf-roepnaam': existingPerson['Roepnaam'],
+      'pf-titel': existingPerson['Titel'],
+      'pf-aankomstjaar': existingPerson['Aankomstjaar'],
+      'pf-geboortejaar': existingPerson['Geboortejaar'],
+      'pf-geboortemaand': existingPerson['Geboortemaand'],
+      'pf-geboortedag': existingPerson['Geboortedag'],
+      'pf-herkomst': existingPerson['Plaats van herkomst'],
+      'pf-adres1': existingPerson['Adres 1'],
+      'pf-adres2': existingPerson['Adres 2'],
+      'pf-adres3': existingPerson['Adres 3'],
+      'pf-adres4': existingPerson['Adres 4'],
+      'pf-postcode': existingPerson['Postcode'],
+      'pf-plaats': existingPerson['Plaats'],
+      'pf-land': existingPerson['Land'],
+      'pf-email1': existingPerson['E-mail 1'],
+      'pf-email2': existingPerson['E-mail 2'],
+      'pf-email3': existingPerson['E-mail 3'],
+      'pf-mobiel1': existingPerson['Mobiel 1'],
+      'pf-mobiel2': existingPerson['Mobiel 2'],
+      'pf-mobiel3': existingPerson['Mobiel 3'],
+      'pf-mobiel4': existingPerson['Mobiel 4'],
+    };
+    Object.entries(fields).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && val != null) el.value = val;
+    });
+    const overledenEl = document.getElementById('pf-overleden');
+    if (overledenEl) overledenEl.checked = existingPerson['Status'] === 'Overleden';
+    form.dataset.editId = existingPerson._id || '';
+  } else {
+    form.dataset.editId = '';
+  }
+
+  modal.classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Login modal
+  document.getElementById('admin-fab').addEventListener('click', async () => {
+    if (adminUser) {
+      if (confirm('Uitloggen als admin?')) {
+        await db.auth.signOut();
+        adminUser = null;
+        updateAdminUI();
+        render();
+      }
+    } else {
+      document.getElementById('login-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('login-email')?.focus(), 100);
+    }
+  });
+
+  document.getElementById('close-login-modal').addEventListener('click', () => {
+    document.getElementById('login-modal').classList.add('hidden');
+  });
+
+  document.getElementById('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const pass  = document.getElementById('login-password').value;
+    const btn   = document.getElementById('login-submit');
+    const err   = document.getElementById('login-error');
+    btn.disabled = true; btn.textContent = 'Bezig…'; err.textContent = '';
+    const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+    btn.disabled = false; btn.textContent = 'Inloggen';
+    if (error) { err.textContent = 'Inloggen mislukt: ' + error.message; return; }
+    adminUser = data.user;
+    updateAdminUI();
+    document.getElementById('login-modal').classList.add('hidden');
+    render();
+  });
+
+  document.getElementById('admin-logout-btn').addEventListener('click', async () => {
+    await db.auth.signOut();
+    adminUser = null;
+    updateAdminUI();
+    render();
+  });
+
+  document.getElementById('add-person-btn').addEventListener('click', () => openPersonModal(null));
+
+  // Person modal
+  document.getElementById('close-person-modal').addEventListener('click', () => {
+    document.getElementById('person-modal').classList.add('hidden');
+  });
+
+  document.getElementById('cancel-person-btn').addEventListener('click', () => {
+    document.getElementById('person-modal').classList.add('hidden');
+  });
+
+  document.getElementById('person-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form    = e.target;
+    const saveBtn = document.getElementById('person-save-btn');
+    saveBtn.disabled = true; saveBtn.textContent = 'Opslaan…';
+
+    const g = id => (document.getElementById(id)?.value || '').trim();
+    const personData = {
+      'Achternaam':          g('pf-achternaam'),
+      'Tussenvoegsel':       g('pf-tussenvoegsel'),
+      'Voorletters':         g('pf-voorletters'),
+      'Voornaam':            g('pf-voornaam'),
+      'Roepnaam':            g('pf-roepnaam'),
+      'Titel':               g('pf-titel'),
+      'Aankomstjaar':        g('pf-aankomstjaar') ? Number(g('pf-aankomstjaar')) : null,
+      'Geboortejaar':        g('pf-geboortejaar') ? Number(g('pf-geboortejaar')) : null,
+      'Geboortemaand':       g('pf-geboortemaand') ? Number(g('pf-geboortemaand')) : null,
+      'Geboortedag':         g('pf-geboortedag') ? Number(g('pf-geboortedag')) : null,
+      'Plaats van herkomst': g('pf-herkomst'),
+      'Adres 1':             g('pf-adres1'),
+      'Adres 2':             g('pf-adres2'),
+      'Adres 3':             g('pf-adres3'),
+      'Adres 4':             g('pf-adres4'),
+      'Postcode':            g('pf-postcode'),
+      'Plaats':              g('pf-plaats'),
+      'Land':                g('pf-land'),
+      'E-mail 1':            g('pf-email1'),
+      'E-mail 2':            g('pf-email2'),
+      'E-mail 3':            g('pf-email3'),
+      'Mobiel 1':            g('pf-mobiel1'),
+      'Mobiel 2':            g('pf-mobiel2'),
+      'Mobiel 3':            g('pf-mobiel3'),
+      'Mobiel 4':            g('pf-mobiel4'),
+    };
+    if (document.getElementById('pf-overleden')?.checked) personData['Status'] = 'Overleden';
+
+    try {
+      const editId = form.dataset.editId;
+      if (editId) {
+        const updated = await updatePerson(editId, personData);
+        updated._searchText = buildSearchText(updated);
+        const idx = PEOPLE.findIndex(x => String(x._id) === String(editId));
+        if (idx !== -1) PEOPLE[idx] = updated;
+      } else {
+        const created = await saveNewPerson(personData);
+        created._searchText = buildSearchText(created);
+        PEOPLE.unshift(created);
+      }
+      document.getElementById('person-modal').classList.add('hidden');
+      render();
+    } catch(err) {
+      alert('Fout bij opslaan: ' + err.message);
+    }
+    saveBtn.disabled = false; saveBtn.textContent = 'Opslaan';
+  });
+});
+
+let PEOPLE = []
+
+// Build dynamic field arrays
+function getEmails(p) {
+  const arr = [];
+  for (let i = 1; i <= 5; i++) {
+    if (p[`E-mail ${i}`]) arr.push({ value: p[`E-mail ${i}`], source: p[`E-mail ${i} (bron)`] });
+  }
+  return arr;
+}
+function getMobiel(p) {
+  const arr = [];
+  for (let i = 1; i <= 4; i++) {
+    if (p[`Mobiel ${i}`]) arr.push({ value: p[`Mobiel ${i}`], source: p[`Mobiel ${i} (bron)`] });
+  }
+  return arr;
+}
+function getVast(p) {
+  const arr = [];
+  for (let i = 1; i <= 2; i++) {
+    if (p[`Vaste tel. ${i}`]) arr.push({ value: p[`Vaste tel. ${i}`], source: p[`Vaste tel. ${i} (bron)`] });
+  }
+  return arr;
+}
+function getAdres(p) {
+  const arr = [];
+  for (let i = 1; i <= 4; i++) {
+    if (p[`Adres ${i}`]) arr.push({ value: p[`Adres ${i}`], source: p[`Adres ${i} (bron)`] });
+  }
+  return arr;
+}
+
+// Format full name
+function fullName(p) {
+  const parts = [];
+  if (p['Voorletters']) parts.push(`<span class="voorletters">${escapeHtml(p['Voorletters'])}</span>`);
+  if (p['Tussenvoegsel']) parts.push(`<span class="tussenvoegsel">${escapeHtml(p['Tussenvoegsel'])}</span>`);
+  parts.push(escapeHtml(p['Achternaam'] || ''));
+  if (p['Roepnaam']) parts.push(`<span class="roepnaam">"${escapeHtml(p['Roepnaam'])}"</span>`);
+  return parts.join(' ');
+}
+
+function plainName(p) {
+  return [p['Voorletters'], p['Tussenvoegsel'], p['Achternaam']].filter(Boolean).join(' ');
+}
+
+function escapeHtml(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ==================== PERSISTENT STATE (localStorage) ====================
+const STORAGE_KEYS = {
+  HUIS_OUDSTE: 'od35_huis_oudste_v1',  // {jaar: personId}
+  EVENTS: 'od35_events_v1',             // [{id, title, date, time, location, description}]
+  ATTENDANCE: 'od35_attendance_v1',     // {personId: {eventId: 'yes'|'no'|'maybe'}}
+  CONTACTS: 'od35_contacts_v1',         // {huiszaken: {...}, klusjes: {...}, bodega: {...}}
+  HISTORY: 'od35_history_v1',           // string (markdown-like)
+};
+
+function loadState(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw);
+  } catch (e) {
+    return fallback;
+  }
+}
+function saveState(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.warn('Opslaan mislukt:', e); }
+}
+
+// Heineken-style 5-pointed star, dark red — for Huis Oudste marker
+const STAR_SVG = '<svg class="oudste-star" viewBox="0 0 24 24" aria-label="Huis Oudste"><polygon points="12,2 14.9,8.9 22.4,9.5 16.7,14.4 18.5,21.7 12,17.7 5.5,21.7 7.3,14.4 1.6,9.5 9.1,8.9"/></svg>';
+
+// Stable person ID — based on Achternaam + Voorletters + Aankomstjaar (independent of array index)
+function getPersonId(p) {
+  return [
+    (p['Achternaam'] || '').toLowerCase().replace(/\s+/g, '_'),
+    (p['Voorletters'] || '').toLowerCase().replace(/\./g, '').replace(/\s+/g, ''),
+    (p['Tussenvoegsel'] || '').toLowerCase().replace(/\s+/g, ''),
+    p['Aankomstjaar'] || 'x'
+  ].join('|');
+}
+
+let huisOudsteMap = loadState(STORAGE_KEYS.HUIS_OUDSTE, {});
+let eventsList = loadState(STORAGE_KEYS.EVENTS, []);
+let attendanceMap = loadState(STORAGE_KEYS.ATTENDANCE, {});
+let contactsMap = loadState(STORAGE_KEYS.CONTACTS, {
+  huiszaken: { naam: '', email: '', telefoon: '', notitie: '' },
+  klusjes: { naam: '', email: '', telefoon: '', notitie: '' },
+  bodega: { naam: '', email: '', telefoon: '', notitie: '' }
+});
+
+function getNextEvent() {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const future = eventsList
+    .filter(e => new Date(e.date) >= now)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  return future[0] || null;
+}
+
+function isHuisOudste(p) {
+  const jaar = p['Aankomstjaar'];
+  if (!jaar) return false;
+  return huisOudsteMap[jaar] === getPersonId(p);
+}
+
+function toggleHuisOudste(p) {
+  const jaar = p['Aankomstjaar'];
+  if (!jaar) return;
+  const id = getPersonId(p);
+  if (huisOudsteMap[jaar] === id) {
+    delete huisOudsteMap[jaar];
+  } else {
+    huisOudsteMap[jaar] = id;
+  }
+  saveState(STORAGE_KEYS.HUIS_OUDSTE, huisOudsteMap);
+}
+
+function getAttendance(p, eventId) {
+  const id = getPersonId(p);
+  return (attendanceMap[id] && attendanceMap[id][eventId]) || null;
+}
+
+function setAttendance(p, eventId, status) {
+  const id = getPersonId(p);
+  if (!attendanceMap[id]) attendanceMap[id] = {};
+  if (attendanceMap[id][eventId] === status) {
+    delete attendanceMap[id][eventId]; // toggle off
+  } else {
+    attendanceMap[id][eventId] = status;
+  }
+  saveState(STORAGE_KEYS.ATTENDANCE, attendanceMap);
+}
+
+function getEventStats(eventId) {
+  let yes = 0, no = 0, maybe = 0;
+  Object.values(attendanceMap).forEach(personMap => {
+    const status = personMap[eventId];
+    if (status === 'yes') yes++;
+    else if (status === 'no') no++;
+    else if (status === 'maybe') maybe++;
+  });
+  return { yes, no, maybe };
+}
+
+// Build search index
+function buildSearchText(p) {
+  const parts = [
+    p['Achternaam'], p['Tussenvoegsel'], p['Voorletters'], p['Voornaam'], p['Roepnaam'],
+    p['Aankomstjaar'], p['Plaats'], p['Plaats van herkomst'],
+    p['E-mail 1'], p['E-mail 2'], p['E-mail 3'], p['E-mail 4'], p['E-mail 5'],
+    p['Mobiel 1'], p['Mobiel 2'], p['Mobiel 3'], p['Mobiel 4'],
+    p['Vaste tel. 1'], p['Vaste tel. 2'],
+    p['Adres 1'], p['Adres 2'], p['Adres 3'], p['Adres 4'],
+    p['Postcode'], p['Lidnummer'],
+  ];
+  return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
+PEOPLE.forEach(p => { p._searchText = buildSearchText(p); });
+
+// Build year filter options
+const allYears = [...new Set(PEOPLE.map(p => p['Aankomstjaar']).filter(Boolean))].sort((a,b) => b - a);
+const jaarFilter = document.getElementById('jaar-filter');
+allYears.forEach(y => {
+  const opt = document.createElement('option');
+  opt.value = y;
+  opt.textContent = y;
+  jaarFilter.appendChild(opt);
+});
+
+// Build alphabet
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const alphaContainer = document.getElementById('alphabet');
+const alphaAll = document.createElement('button');
+alphaAll.className = 'alpha-btn active';
+alphaAll.textContent = 'Alle';
+alphaAll.dataset.letter = '';
+alphaContainer.appendChild(alphaAll);
+
+const lettersWithPeople = new Set();
+PEOPLE.forEach(p => {
+  const first = (p['Achternaam'] || '').charAt(0).toUpperCase();
+  if (first) lettersWithPeople.add(first);
+});
+
+alphabet.forEach(letter => {
+  const btn = document.createElement('button');
+  btn.className = 'alpha-btn';
+  btn.textContent = letter;
+  btn.dataset.letter = letter;
+  btn.disabled = !lettersWithPeople.has(letter);
+  alphaContainer.appendChild(btn);
+});
+
+let currentLetter = '';
+alphaContainer.addEventListener('click', e => {
+  if (e.target.classList.contains('alpha-btn') && !e.target.disabled) {
+    currentLetter = e.target.dataset.letter;
+    document.querySelectorAll('.alpha-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    render();
+  }
+});
+
+// Stats
+function updateStats() {
+  const total = PEOPLE.length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-line">135 jaar · <strong>${total}</strong> huisgenoten geregistreerd</div>
+  `;
+}
+
+// Sort: alive first, then by year DESC, then by achternaam
+function sortPeople(arr) {
+  return [...arr].sort((a, b) => {
+    const aDeceased = a['Status'] === 'Overleden' ? 1 : 0;
+    const bDeceased = b['Status'] === 'Overleden' ? 1 : 0;
+    if (aDeceased !== bDeceased) return aDeceased - bDeceased;
+    const ay = a['Aankomstjaar'] || 0;
+    const by = b['Aankomstjaar'] || 0;
+    if (ay !== by) return by - ay;
+    return (a['Achternaam'] || '').localeCompare(b['Achternaam'] || '');
+  });
+}
+
+// State
+let currentQuery = '';
+let currentJaar = '';
+let currentStatus = '';
+const expandedSet = new Set();
+
+const searchInput = document.getElementById('search');
+const statusFilter = document.getElementById('status-filter');
+const resetBtn = document.getElementById('reset');
+const list = document.getElementById('person-list');
+const resultsCount = document.getElementById('results-count');
+
+let searchTimeout;
+searchInput.addEventListener('input', e => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentQuery = e.target.value.trim().toLowerCase();
+    render();
+  }, 80);
+});
+
+jaarFilter.addEventListener('change', e => {
+  currentJaar = e.target.value;
+  render();
+});
+statusFilter.addEventListener('change', e => {
+  currentStatus = e.target.value;
+  render();
+});
+resetBtn.addEventListener('click', () => {
+  currentQuery = '';
+  currentJaar = '';
+  currentStatus = '';
+  currentLetter = '';
+  searchInput.value = '';
+  jaarFilter.value = '';
+  statusFilter.value = '';
+  document.querySelectorAll('.alpha-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.alpha-btn[data-letter=""]').classList.add('active');
+  expandedSet.clear();
+  render();
+});
+
+function highlightMatch(text, query) {
+  if (!query || !text) return escapeHtml(text || '');
+  const lowerText = String(text).toLowerCase();
+  const idx = lowerText.indexOf(query);
+  if (idx === -1) return escapeHtml(text);
+  return escapeHtml(text.slice(0, idx)) +
+    '<span class="match-highlight">' + escapeHtml(text.slice(idx, idx + query.length)) + '</span>' +
+    escapeHtml(text.slice(idx + query.length));
+}
+
+function renderDetails(p) {
+  const emails = getEmails(p);
+  const mobiel = getMobiel(p);
+  const vast = getVast(p);
+  const adres = getAdres(p);
+
+  let adminHtml = '';
+  if (isAdmin()) {
+    adminHtml = `<div class="admin-person-actions">
+      <button class="admin-edit-btn" data-action="admin-edit" data-id="${p._id || ''}">✎ Bewerken</button>
+      <button class="admin-delete-btn" data-action="admin-delete" data-id="${p._id || ''}">✕ Verwijderen</button>
+    </div>`;
+  }
+  let html = '<div class="details-grid">';
+
+  // Persoon
+  html += '<div class="detail-section"><h3>Persoonlijk</h3>';
+  if (p['Voornaam']) html += `<div class="detail-row"><span class="detail-label">Voornaam</span><span class="detail-value">${escapeHtml(p['Voornaam'])}</span></div>`;
+  if (p['Roepnaam']) html += `<div class="detail-row"><span class="detail-label">Roepnaam</span><span class="detail-value">${escapeHtml(p['Roepnaam'])}</span></div>`;
+  if (p['Voorletters']) html += `<div class="detail-row"><span class="detail-label">Voorletters</span><span class="detail-value">${escapeHtml(p['Voorletters'])}</span></div>`;
+  if (p['Titel']) html += `<div class="detail-row"><span class="detail-label">Titel</span><span class="detail-value">${escapeHtml(p['Titel'])}</span></div>`;
+  if (p['Lidnummer']) html += `<div class="detail-row"><span class="detail-label">Lidnummer</span><span class="detail-value">${escapeHtml(p['Lidnummer'])}</span></div>`;
+  if (p['Aankomstjaar']) html += `<div class="detail-row"><span class="detail-label">Aankomst</span><span class="detail-value">${escapeHtml(p['Aankomstjaar'])}</span></div>`;
+  if (p['Geboortejaar'] || p['Geboortemaand'] || p['Geboortedag']) {
+    const gd = [p['Geboortedag'], p['Geboortemaand'], p['Geboortejaar']].filter(Boolean).join(' / ');
+    html += `<div class="detail-row"><span class="detail-label">Geboorte</span><span class="detail-value">${escapeHtml(gd)}</span></div>`;
+  }
+  if (p['Plaats van herkomst']) html += `<div class="detail-row"><span class="detail-label">Herkomst</span><span class="detail-value">${escapeHtml(p['Plaats van herkomst'])}</span></div>`;
+  html += '</div>';
+
+  // E-mails
+  if (emails.length > 0) {
+    html += '<div class="detail-section"><h3>E-mailadres' + (emails.length > 1 ? 'sen' : '') + '</h3>';
+    html += '<div class="multi-value">';
+    emails.forEach(e => {
+      html += `<div class="multi-value-item"><a href="mailto:${escapeHtml(e.value)}">${escapeHtml(e.value)}</a>${e.source ? `<span class="source-tag">${escapeHtml(e.source)}</span>` : ''}</div>`;
+    });
+    html += '</div></div>';
+  }
+
+  // Telefoons
+  if (mobiel.length > 0 || vast.length > 0) {
+    html += '<div class="detail-section"><h3>Telefoon</h3>';
+    html += '<div class="multi-value">';
+    mobiel.forEach(m => {
+      const cleaned = String(m.value).replace(/[^0-9+]/g, '');
+      html += `<div class="multi-value-item"><span class="detail-label" style="margin-right:0.5em">M.</span><a href="tel:${cleaned}">${escapeHtml(m.value)}</a>${m.source ? `<span class="source-tag">${escapeHtml(m.source)}</span>` : ''}</div>`;
+    });
+    vast.forEach(v => {
+      const cleaned = String(v.value).replace(/[^0-9+]/g, '');
+      html += `<div class="multi-value-item"><span class="detail-label" style="margin-right:0.5em">V.</span><a href="tel:${cleaned}">${escapeHtml(v.value)}</a>${v.source ? `<span class="source-tag">${escapeHtml(v.source)}</span>` : ''}</div>`;
+    });
+    html += '</div></div>';
+  }
+
+  // Adressen
+  if (adres.length > 0 || p['Postcode'] || p['Plaats']) {
+    html += '<div class="detail-section"><h3>Adres' + (adres.length > 1 ? 'sen' : '') + '</h3>';
+    html += '<div class="multi-value">';
+    if (adres.length > 0) {
+      adres.forEach((a, i) => {
+        const lines = [a.value];
+        if (i === 0 && (p['Postcode'] || p['Plaats'])) {
+          lines.push([p['Postcode'], p['Plaats']].filter(Boolean).join(' '));
+          if (p['Land']) lines.push(p['Land']);
+        }
+        html += `<div class="multi-value-item">${lines.map(l => escapeHtml(l)).join('<br>')}${a.source ? `<span class="source-tag">${escapeHtml(a.source)}</span>` : ''}</div>`;
+      });
+    } else if (p['Postcode'] || p['Plaats']) {
+      html += `<div class="multi-value-item">${escapeHtml([p['Postcode'], p['Plaats']].filter(Boolean).join(' '))}${p['Land'] ? '<br>' + escapeHtml(p['Land']) : ''}</div>`;
+    }
+    html += '</div></div>';
+  }
+
+  html += '</div>';
+
+  // Meta strip
+  html += '<div class="meta-strip">';
+  if (p['Bronnen']) html += `<span>Bronnen: ${escapeHtml(p['Bronnen'])}</span>`;
+  if (p['# Bronnen']) html += `<span>${escapeHtml(p['# Bronnen'])} bron${p['# Bronnen'] > 1 ? 'nen' : ''}</span>`;
+  if (p['Samenvoeg-notitie']) html += `<span>${escapeHtml(p['Samenvoeg-notitie'])}</span>`;
+  html += '</div>';
+
+  // Huis Oudste toggle (alleen voor personen met aankomstjaar)
+  if (p['Aankomstjaar']) {
+    const isOudste = isHuisOudste(p);
+    const personId = getPersonId(p);
+    html += `<div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--line-soft);">`;
+    html += `<button class="huis-oudste-toggle ${isOudste ? 'active' : ''}" data-action="toggle-oudste" data-person-id="${escapeHtml(personId)}">`;
+    html += isOudste ? `Huis Oudste van ${p['Aankomstjaar']}` : `Markeer als Huis Oudste`;
+    html += `</button>`;
+    // Toon ander persoon als die al Huis Oudste is
+    const currentOudsteId = huisOudsteMap[p['Aankomstjaar']];
+    if (currentOudsteId && currentOudsteId !== personId) {
+      const other = PEOPLE.find(x => getPersonId(x) === currentOudsteId);
+      if (other) {
+        html += `<span style="margin-left:0.75rem; font-size:0.85rem; color:var(--gray); font-style:italic;">huidige Huis Oudste: ${escapeHtml(plainName(other))}</span>`;
+      }
+    }
+    html += `</div>`;
+  }
+
+  // Aanwezigheid bij volgend event
+  const nextEvent = getNextEvent();
+  if (nextEvent) {
+    const personId = getPersonId(p);
+    const status = getAttendance(p, nextEvent.id);
+    html += `<div class="attendance-section">`;
+    html += `<h4>Aanwezigheid bij volgend event</h4>`;
+    html += `<span class="attendance-event-name">${escapeHtml(nextEvent.title)} — ${formatEventDate(nextEvent.date, true)}</span>`;
+    html += `<div class="attendance-options">`;
+    html += `<button class="attendance-btn yes ${status === 'yes' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(nextEvent.id)}" data-status="yes">✓ Aanwezig</button>`;
+    html += `<button class="attendance-btn maybe ${status === 'maybe' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(nextEvent.id)}" data-status="maybe">? Misschien</button>`;
+    html += `<button class="attendance-btn no ${status === 'no' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(nextEvent.id)}" data-status="no">✗ Afwezig</button>`;
+    html += `</div></div>`;
+  }
+
+  // Wijzigingsformulier
+  html += renderChangeForm(p);
+
+  return adminHtml + html;
+}
+
+function renderChangeForm(p) {
+  const personLabel = plainName(p) + (p['Aankomstjaar'] ? ` (${p['Aankomstjaar']})` : '');
+  const safeLabel = escapeHtml(personLabel);
+  return `
+    <div class="change-request">
+      <button class="change-toggle-btn" data-action="toggle-form">Wijziging aanvragen</button>
+      <div class="change-form">
+        <h4>Wijziging aanvragen voor ${safeLabel}</h4>
+        <p class="intro">Geef hieronder aan wat er aangepast moet worden — bijvoorbeeld een nieuw e-mailadres, ander telefoonnummer, of een correctie. We controleren je aanvraag voordat we het in de lijst doorvoeren.</p>
+        <form data-person-label="${safeLabel}">
+          <div class="form-row">
+            <div class="form-field">
+              <label>Jouw naam</label>
+              <input type="text" name="aanvrager_naam" required placeholder="Hoe heet je?">
+            </div>
+            <div class="form-field">
+              <label>Jouw e-mailadres</label>
+              <input type="email" name="aanvrager_email" required placeholder="voor eventuele terugkoppeling">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Wat moet er aangepast worden?</label>
+            <select name="veld" required>
+              <option value="">— selecteer —</option>
+              <option value="E-mailadres">E-mailadres</option>
+              <option value="Mobiel nummer">Mobiel nummer</option>
+              <option value="Vaste telefoon">Vaste telefoon</option>
+              <option value="Adres">Adres</option>
+              <option value="Naam (achternaam, voorletters, etc.)">Naam (achternaam, voorletters, etc.)</option>
+              <option value="Aankomstjaar">Aankomstjaar</option>
+              <option value="Status (overleden melden)">Status (overleden melden)</option>
+              <option value="Persoon verwijderen">Persoon verwijderen uit lijst</option>
+              <option value="Anders / meerdere zaken">Anders / meerdere zaken</option>
+            </select>
+          </div>
+          <div class="form-field full" style="margin-top:1rem">
+            <label>Wijziging / nieuwe waarde</label>
+            <textarea name="wijziging" required placeholder="Bijvoorbeeld: nieuw e-mailadres = jansen@nieuwadres.nl, of: telefoonnummer veranderd in 06-12345678"></textarea>
+          </div>
+          <div class="form-field full" style="margin-top:1rem">
+            <label>Toelichting (optioneel)</label>
+            <textarea name="toelichting" placeholder="Aanvullende context, of waarom je deze wijziging aanvraagt"></textarea>
+          </div>
+          <input type="hidden" name="persoon" value="${safeLabel}">
+          <div class="form-actions">
+            <button type="submit" class="submit-btn">Verzenden</button>
+            <button type="button" class="cancel-btn" data-action="cancel-form">Annuleren</button>
+            <span class="form-status"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  let filtered = PEOPLE.filter(p => {
+    if (currentQuery && !p._searchText.includes(currentQuery)) return false;
+    if (currentJaar && String(p['Aankomstjaar']) !== currentJaar) return false;
+    if (currentStatus === 'levend' && p['Status'] === 'Overleden') return false;
+    if (currentStatus === 'overleden' && p['Status'] !== 'Overleden') return false;
+    if (currentStatus === 'huis-oudste' && !isHuisOudste(p)) return false;
+    if (currentLetter) {
+      const first = (p['Achternaam'] || '').charAt(0).toUpperCase();
+      if (first !== currentLetter) return false;
+    }
+    return true;
+  });
+
+  filtered = sortPeople(filtered);
+
+  // Update count
+  resultsCount.innerHTML = filtered.length === PEOPLE.length
+    ? `<strong>${filtered.length}</strong> personen`
+    : `<strong>${filtered.length}</strong> van ${PEOPLE.length} personen`;
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">∅</div><p>Geen huisgenoten gevonden</p></div>';
+    return;
+  }
+
+  // Build HTML
+  let html = '';
+  filtered.forEach((p, idx) => {
+    const personId = getPersonId(p);
+    const expanded = expandedSet.has(personId);
+    const deceased = p['Status'] === 'Overleden';
+    const jaar = p['Aankomstjaar'] || '?';
+    const jaarClass = p['Aankomstjaar'] ? '' : 'empty';
+
+    html += `<div class="person ${expanded ? 'expanded' : ''} ${deceased ? 'deceased' : ''}" data-id="${escapeHtml(personId)}">`;
+    html += `<div class="person-summary">`;
+    html += `<div class="person-jaar ${jaarClass}">${isHuisOudste(p) ? STAR_SVG : ''}${escapeHtml(String(jaar))}</div>`;
+    html += `<div class="person-name">${fullName(p)}${deceased ? '<span class="deceased-badge">overleden</span>' : ''}</div>`;
+    html += `<div class="person-toggle">▾</div>`;
+    html += `</div>`;
+    if (expanded) {
+      html += `<div class="person-details">${renderDetails(p)}</div>`;
+    }
+    html += `</div>`;
+  });
+
+  list.innerHTML = html;
+}
+
+// Click handler (event delegation)
+list.addEventListener('click', e => {
+  // Huis Oudste toggle
+  if (e.target.matches('[data-action="toggle-oudste"]')) {
+    e.stopPropagation();
+    const id = e.target.dataset.personId;
+    const p = PEOPLE.find(x => getPersonId(x) === id);
+    if (p) {
+      toggleHuisOudste(p);
+      render();
+    }
+    return;
+  }
+  // Aanwezigheid
+  if (e.target.matches('[data-action="set-attendance"]')) {
+    e.stopPropagation();
+    const id = e.target.dataset.personId;
+    const eventId = e.target.dataset.eventId;
+    const status = e.target.dataset.status;
+    const p = PEOPLE.find(x => getPersonId(x) === id);
+    if (p) {
+      setAttendance(p, eventId, status);
+      render();
+      renderEvents(); // ook de tellers in de agenda bijwerken
+    }
+    return;
+  }
+  // Form toggle button
+  if (e.target.matches('[data-action="toggle-form"]')) {
+    e.stopPropagation();
+    const form = e.target.parentElement.querySelector('.change-form');
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) {
+      setTimeout(() => form.querySelector('input')?.focus(), 100);
+    }
+    return;
+  }
+  // Cancel button
+  if (e.target.matches('[data-action="cancel-form"]')) {
+    e.stopPropagation();
+    const form = e.target.closest('.change-form');
+    form.classList.remove('open');
+    form.querySelector('form').reset();
+    const status = form.querySelector('.form-status');
+    status.textContent = '';
+    status.className = 'form-status';
+    return;
+  }
+  // Don't toggle expansion when clicking inside the form
+  if (e.target.closest('.change-form') || e.target.closest('.change-request')) return;
+
+  // Admin: bewerken
+  if (e.target.matches('[data-action="admin-edit"]')) {
+    e.stopPropagation();
+    const id = e.target.dataset.id;
+    const p = PEOPLE.find(x => String(x._id) === String(id));
+    if (p) openPersonModal(p);
+    return;
+  }
+  // Admin: verwijderen
+  if (e.target.matches('[data-action="admin-delete"]')) {
+    e.stopPropagation();
+    const id = e.target.dataset.id;
+    const p = PEOPLE.find(x => String(x._id) === String(id));
+    if (p && confirm(`Weet je zeker dat je ${plainName(p)} wilt verwijderen?`)) {
+      deletePerson(id);
+    }
+    return;
+  }
+  const summary = e.target.closest('.person-summary');
+  if (!summary) return;
+  const personEl = summary.parentElement;
+  const id = personEl.dataset.id;
+  if (expandedSet.has(id)) expandedSet.delete(id);
+  else expandedSet.add(id);
+  render();
+});
+
+// Form submit handler
+list.addEventListener('submit', async e => {
+  if (!e.target.matches('.change-form form')) return;
+  e.preventDefault();
+
+  const form = e.target;
+  const formContainer = form.closest('.change-form');
+  const submitBtn = form.querySelector('.submit-btn');
+  const cancelBtn = form.querySelector('.cancel-btn');
+  const status = form.querySelector('.form-status');
+  const personLabel = form.dataset.personLabel;
+
+  const payload = {
+    persoon:         personLabel,
+    aanvrager_naam:  formData.get ? formData.get('aanvrager_naam') : form.querySelector('[name="aanvrager_naam"]').value,
+    aanvrager_email: formData.get ? formData.get('aanvrager_email') : form.querySelector('[name="aanvrager_email"]').value,
+    veld:            form.querySelector('[name="veld"]').value,
+    wijziging:       form.querySelector('[name="wijziging"]').value,
+    toelichting:     form.querySelector('[name="toelichting"]')?.value || '',
+  };
+
+  status.textContent = 'Verzenden…';
+  status.className = 'form-status sending';
+  submitBtn.disabled = true;
+  cancelBtn.disabled = true;
+
+  try {
+    const res = await fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      formContainer.innerHTML = `
+        <div class="form-success">
+          <div class="icon">\u2713</div>
+          <h4>Aanvraag verstuurd</h4>
+          <p>Bedankt — we nemen de wijziging zo spoedig mogelijk in behandeling.</p>
+        </div>`;
+    } else {
+      const data = await res.json().catch(() => ({}));
+      const msg = (data.errors && data.errors.map(x => x.message).join(', ')) || 'Er ging iets mis. Probeer later opnieuw.';
+      status.textContent = msg;
+      status.className = 'form-status error';
+      submitBtn.disabled = false;
+      cancelBtn.disabled = false;
+    }
+  } catch (err) {
+    status.textContent = 'Verbinding mislukt. Controleer je internet en probeer opnieuw.';
+    status.className = 'form-status error';
+    submitBtn.disabled = false;
+    cancelBtn.disabled = false;
+  }
+});
+
+// ==================== TABS ====================
+document.getElementById('tab-nav').addEventListener('click', e => {
+  if (!e.target.matches('.tab-btn')) return;
+  const tab = e.target.dataset.tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
+  // Re-render relevant tab content
+  if (tab === 'agenda') renderEvents();
+  if (tab === 'contacten') renderContacts();
+  if (tab === 'geschiedenis') renderHistory();
+});
+
+// ==================== AGENDA ====================
+function formatEventDate(dateStr, short = false) {
+  const d = new Date(dateStr);
+  const months = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  if (short) return `${d.getDate()} ${months[d.getMonth()].slice(0,3)} ${d.getFullYear()}`;
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function renderEvents() {
+  const container = document.getElementById('event-list');
+  if (!container) return;
+  if (eventsList.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">∅</div><p>Nog geen events ingepland</p></div>';
+    return;
+  }
+  // Sort: future events first (asc), then past events (desc)
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const sorted = [...eventsList].sort((a, b) => {
+    const da = new Date(a.date), db = new Date(b.date);
+    const aFuture = da >= now, bFuture = db >= now;
+    if (aFuture !== bFuture) return aFuture ? -1 : 1;
+    return aFuture ? da - db : db - da;
+  });
+  const nextEvent = getNextEvent();
+  const months = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+  let html = '';
+  sorted.forEach(ev => {
+    const d = new Date(ev.date);
+    const isPast = d < now;
+    const isNext = nextEvent && nextEvent.id === ev.id;
+    const stats = getEventStats(ev.id);
+    html += `<div class="event-card ${isPast ? 'past' : ''} ${isNext ? 'next-event' : ''}">`;
+    html += `<div class="event-date">`;
+    html += `<div class="day">${d.getDate()}</div>`;
+    html += `<div class="month">${months[d.getMonth()]}</div>`;
+    html += `<div class="year">${d.getFullYear()}</div>`;
+    html += `</div>`;
+    html += `<div class="event-info">`;
+    html += `<h3>${escapeHtml(ev.title)}${isNext ? '<span class="next-pill">volgend</span>' : ''}</h3>`;
+    if (ev.location || ev.time) {
+      html += `<div class="location">`;
+      if (ev.time) html += `${escapeHtml(ev.time)} uur`;
+      if (ev.time && ev.location) html += ' · ';
+      if (ev.location) html += escapeHtml(ev.location);
+      html += `</div>`;
+    }
+    if (ev.description) html += `<div class="description">${escapeHtml(ev.description)}</div>`;
+    html += `</div>`;
+    html += `<div class="event-actions">`;
+    html += `<div class="event-stats">✓${stats.yes} · ?${stats.maybe} · ✗${stats.no}</div>`;
+    html += `<button class="event-delete" data-event-id="${escapeHtml(ev.id)}">Verwijder</button>`;
+    html += `</div>`;
+    html += `</div>`;
+  });
+  container.innerHTML = html;
+}
+
+document.getElementById('event-form-toggle').addEventListener('click', () => {
+  document.getElementById('event-form').classList.toggle('open');
+});
+document.getElementById('event-form-cancel').addEventListener('click', () => {
+  document.getElementById('event-form').classList.remove('open');
+  document.getElementById('event-form').reset();
+});
+document.getElementById('event-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const newEvent = {
+    id: 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    title: fd.get('title'),
+    date: fd.get('date'),
+    time: fd.get('time') || '',
+    location: fd.get('location') || '',
+    description: fd.get('description') || ''
+  };
+  eventsList.push(newEvent);
+  saveState(STORAGE_KEYS.EVENTS, eventsList);
+  form.reset();
+  form.classList.remove('open');
+  renderEvents();
+  render(); // ook personen-tab herberekenen i.v.m. volgend-event-aanwezigheid
+});
+document.getElementById('event-list').addEventListener('click', e => {
+  if (e.target.matches('.event-delete')) {
+    const id = e.target.dataset.eventId;
+    if (confirm('Event verwijderen? Aanwezigheid van huisgenoten voor dit event blijft bewaard.')) {
+      eventsList = eventsList.filter(ev => ev.id !== id);
+      saveState(STORAGE_KEYS.EVENTS, eventsList);
+      renderEvents();
+      render();
+    }
+  }
+});
+
+// ==================== CONTACTEN ====================
+const CONTACT_ROLES = [
+  { key: 'huiszaken', icon: '🏠', title: 'Huiszaken', desc: 'Algemene contactpersoon voor huiszaken — financiën, contracten en alles wat het huis in brede zin betreft.' },
+  { key: 'klusjes', icon: '🔧', title: 'Klusjes', desc: 'Voor onderhoud, reparaties, en klussen aan het pand. Heeft pet op voor de praktische zaken.' },
+  { key: 'bodega', icon: '🍷', title: 'Bodega', desc: 'Beheert de bodega — voorraad, bestellingen, en alles wat daarbij komt kijken.' }
+];
+
+function renderContacts() {
+  const container = document.getElementById('contacts-grid');
+  if (!container) return;
+  let html = '';
+  CONTACT_ROLES.forEach(role => {
+    const c = contactsMap[role.key] || {};
+    const hasName = c.naam && c.naam.trim();
+    html += `<div class="contact-card" data-role="${role.key}">`;
+    html += `<div class="role-icon">${role.icon}</div>`;
+    html += `<h3>${role.title}</h3>`;
+    html += `<p class="role-desc">${role.desc}</p>`;
+    html += `<div class="contact-display">`;
+    html += `<div class="contact-name ${hasName ? '' : 'empty'}">${hasName ? escapeHtml(c.naam) : 'Nog niet ingevuld'}</div>`;
+    if (c.email) html += `<div class="contact-detail">✉ <a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a></div>`;
+    if (c.telefoon) {
+      const cleaned = String(c.telefoon).replace(/[^0-9+]/g, '');
+      html += `<div class="contact-detail">☎ <a href="tel:${cleaned}">${escapeHtml(c.telefoon)}</a></div>`;
+    }
+    if (c.notitie) html += `<div class="contact-detail" style="font-style:italic; color:var(--gray); margin-top:0.5rem;">${escapeHtml(c.notitie)}</div>`;
+    html += `<button class="edit-btn" data-action="edit-contact" data-role="${role.key}">${hasName ? 'Bewerken' : 'Invullen'}</button>`;
+    html += `</div>`;
+    html += `<div class="contact-edit-form" data-role="${role.key}">`;
+    const sortedPeople = [...PEOPLE].sort((a,b) => (a['Achternaam']||'').localeCompare(b['Achternaam']||''));
+    html += `<label class="picker-label">Kies uit ledenlijst</label>`;
+    html += `<select class="person-picker">`;
+    html += `<option value="">— selecteer een huisgenoot —</option>`;
+    sortedPeople.forEach(p => {
+      const naam = plainName(p);
+      const jaar = p['Aankomstjaar'] ? ` (${p['Aankomstjaar']})` : '';
+      const email = p['E-mail 1'] || '';
+      const tel = p['Mobiel 1'] || '';
+      html += `<option value="${escapeHtml(naam)}" data-email="${escapeHtml(email)}" data-tel="${escapeHtml(tel)}">${escapeHtml(naam)}${jaar}</option>`;
+    });
+    html += `</select>`;
+    html += `<div class="picker-or">— of vul zelf in —</div>`;
+    html += `<input type="text" name="naam" placeholder="Naam" value="${escapeHtml(c.naam || '')}">`;
+    html += `<input type="email" name="email" placeholder="E-mail" value="${escapeHtml(c.email || '')}">`;
+    html += `<input type="tel" name="telefoon" placeholder="Telefoonnummer" value="${escapeHtml(c.telefoon || '')}">`;
+    html += `<input type="text" name="notitie" placeholder="Korte notitie (optioneel)" value="${escapeHtml(c.notitie || '')}">`;
+    html += `<div class="form-buttons">`;
+    html += `<button class="save-btn" data-action="save-contact" data-role="${role.key}">Opslaan</button>`;
+    html += `<button class="cancel-btn" data-action="cancel-contact" data-role="${role.key}">Annuleren</button>`;
+    html += `</div></div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+document.getElementById('contacts-grid').addEventListener('change', e => {
+  if (!e.target.classList.contains('person-picker')) return;
+  const opt = e.target.options[e.target.selectedIndex];
+  if (!opt.value) return;
+  const form = e.target.closest('.contact-edit-form');
+  form.querySelector('[name="naam"]').value   = opt.value;
+  form.querySelector('[name="email"]').value  = opt.dataset.email || '';
+  form.querySelector('[name="telefoon"]').value = opt.dataset.tel || '';
+});
+
+document.getElementById('contacts-grid').addEventListener('click', e => {
+  const role = e.target.dataset.role;
+  if (!role) return;
+  const card = e.target.closest('.contact-card');
+  const form = card.querySelector('.contact-edit-form');
+  const display = card.querySelector('.contact-display');
+  if (e.target.dataset.action === 'edit-contact') {
+    form.classList.add('open');
+    display.style.display = 'none';
+  } else if (e.target.dataset.action === 'cancel-contact') {
+    form.classList.remove('open');
+    display.style.display = '';
+  } else if (e.target.dataset.action === 'save-contact') {
+    contactsMap[role] = {
+      naam: form.querySelector('[name="naam"]').value.trim(),
+      email: form.querySelector('[name="email"]').value.trim(),
+      telefoon: form.querySelector('[name="telefoon"]').value.trim(),
+      notitie: form.querySelector('[name="notitie"]').value.trim()
+    };
+    saveState(STORAGE_KEYS.CONTACTS, contactsMap);
+    renderContacts();
+  }
+});
+
+// ==================== GESCHIEDENIS ====================
+const DEFAULT_HISTORY = `# De geschiedenis van Oude Delft 35
+
+Sinds 1891 een thuis voor huisgenoten van het Delftsch Studenten Corps
+
+## Het begin
+
+Oude Delft 35 — een statig grachtenpand aan een van de oudste grachten van Delft — werd in 1891 betrokken als studentenhuis. Wat ooit begon als een onderkomen voor een handvol corpsleden, groeide in de loop der decennia uit tot een instituut binnen het Delftsch Studenten Corps en de fraterniteit Omega Ksi. Generaties huisgenoten hebben hier hun studententijd doorgebracht, en de muren dragen sporen van iedere lichting.
+
+## Tradities en eigen wetten
+
+Het huis kent zijn eigen liederen, eigen rituelen en eigen ongeschreven regels. Wie de OD35 betreedt, weet: hier wordt niet alleen gewoond, hier wordt geleefd. De bodega is meer dan een kelder met flessen; het is het kloppende hart van het huis. De jaarlijkse oud-huisgenoten dag verbindt lichtingen die elkaar nooit zouden hebben ontmoet, behalve in deze gangen.
+
+> Vivant, crescant, floreant — dat zij leven, dat zij groeien, dat zij bloeien.
+
+## Door de oorlogen heen
+
+Twee wereldoorlogen, talloze maatschappelijke omwentelingen, en niet te vergeten: bestuurscrises, lustrumvieringen en bouwkundige avonturen. De OD35 heeft het allemaal overleefd — niet altijd zonder kleerscheuren, maar altijd met een verhaal om de volgende generatie door te vertellen.
+
+## Lustra en jubilea
+
+Iedere vijf jaar viert het huis een lustrum. Het 27e lustrum (135 jaar) markeert een bijzonder moment: een huis dat ouder is dan de meeste families, ouder dan de meeste landen in hun huidige vorm, en nog altijd levend. Het archief — boekjes, foto's, krantenknipsels en herinneringen — vormt het bewijs.
+
+## Heden
+
+Vandaag wonen er nog steeds huisgenoten op de OD35, en in iedere lichting zit een Huis Oudste die het kompas hoog houdt voor de jongere jaren. Zo blijft de continuïteit gewaarborgd: van 1891 tot nu, en — als het aan ons ligt — nog vele lustra verder.
+
+> Deze tekst kun je zelf aanpassen via de knop "Geschiedenis bewerken" hieronder.`;
+
+function parseHistoryMarkdown(text) {
+  // Simpele markdown-achtige parser
+  const lines = text.split('\n');
+  let html = '';
+  let inTimeline = false;
+  let inParagraph = false;
+  let paragraphBuf = [];
+
+  function flushParagraph() {
+    if (paragraphBuf.length) {
+      html += `<p>${paragraphBuf.join(' ')}</p>`;
+      paragraphBuf = [];
+    }
+    inParagraph = false;
+  }
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      return;
+    }
+    if (trimmed.startsWith('# ')) {
+      flushParagraph();
+      html += `<h2>${escapeHtml(trimmed.slice(2))}</h2>`;
+    } else if (trimmed.startsWith('## ')) {
+      flushParagraph();
+      html += `<h3>${escapeHtml(trimmed.slice(3))}</h3>`;
+    } else if (trimmed.startsWith('> ')) {
+      flushParagraph();
+      html += `<div class="pull-quote">${escapeHtml(trimmed.slice(2))}</div>`;
+    } else if (trimmed.match(/^\d{4}\s*[-–:]\s*/)) {
+      // Timeline item: "1891 - tekst" of "1891: tekst"
+      if (!inTimeline) {
+        flushParagraph();
+        html += '<div class="timeline">';
+        inTimeline = true;
+      }
+      const m = trimmed.match(/^(\d{4})\s*[-–:]\s*(.+)$/);
+      html += `<div class="timeline-item"><div class="timeline-year">${m[1]}</div><div class="timeline-text">${escapeHtml(m[2])}</div></div>`;
+    } else {
+      if (inTimeline) { html += '</div>'; inTimeline = false; }
+      // Voeg toe aan paragraaf — eerste regel is lead als het begin van het document is
+      if (paragraphBuf.length === 0 && html.match(/<h2>[^<]*<\/h2>$/) && !html.includes('<p>')) {
+        html += `<p class="lead">${escapeHtml(trimmed)}</p>`;
+      } else {
+        paragraphBuf.push(escapeHtml(trimmed));
+      }
+    }
+  });
+  flushParagraph();
+  if (inTimeline) html += '</div>';
+  return html;
+}
+
+function renderHistory() {
+  const container = document.getElementById('history-content');
+  if (!container) return;
+  const text = loadState(STORAGE_KEYS.HISTORY, DEFAULT_HISTORY) || DEFAULT_HISTORY;
+  container.innerHTML = parseHistoryMarkdown(text);
+}
+
+document.getElementById('history-edit-btn').addEventListener('click', () => {
+  const editor = document.getElementById('history-editor');
+  const textarea = document.getElementById('history-textarea');
+  textarea.value = loadState(STORAGE_KEYS.HISTORY, DEFAULT_HISTORY) || DEFAULT_HISTORY;
+  editor.classList.toggle('open');
+});
+document.getElementById('history-save').addEventListener('click', () => {
+  const text = document.getElementById('history-textarea').value;
+  saveState(STORAGE_KEYS.HISTORY, text);
+  document.getElementById('history-editor').classList.remove('open');
+  renderHistory();
+});
+document.getElementById('history-cancel').addEventListener('click', () => {
+  document.getElementById('history-editor').classList.remove('open');
+});
+document.getElementById('history-reset').addEventListener('click', () => {
+  if (confirm('Weet je zeker dat je de geschiedenis wilt herstellen naar de standaardtekst?')) {
+    document.getElementById('history-textarea').value = DEFAULT_HISTORY;
+  }
+});
+
+// ==================== EXCEL EXPORT ====================
+document.getElementById('export-excel').addEventListener('click', () => {
+  if (typeof XLSX === 'undefined') {
+    alert('Excel-bibliotheek nog niet geladen. Probeer het over een paar seconden opnieuw.');
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Personen (alle data + Huis Oudste markering)
+  const personenRows = PEOPLE.map(p => {
+    const row = { ...p };
+    row['Huis Oudste'] = isHuisOudste(p) ? 'Ja' : '';
+    // Aanwezigheid per event
+    eventsList.forEach(ev => {
+      const status = getAttendance(p, ev.id);
+      const label = status === 'yes' ? 'Aanwezig' : status === 'no' ? 'Afwezig' : status === 'maybe' ? 'Misschien' : '';
+      row[`Aanwezig: ${ev.title} (${formatEventDate(ev.date, true)})`] = label;
+    });
+    return row;
+  });
+  // Bepaal alle kolommen (union van alle keys, met vaste volgorde voor de belangrijkste)
+  const priorityCols = ['Achternaam','Tussenvoegsel','Voorletters','Voornaam','Roepnaam','Titel','Aankomstjaar','Huis Oudste','Geboortejaar','Geboortemaand','Geboortedag','Plaats van herkomst'];
+  const allKeys = new Set();
+  personenRows.forEach(r => Object.keys(r).forEach(k => allKeys.add(k)));
+  const orderedCols = [
+    ...priorityCols.filter(c => allKeys.has(c)),
+    ...[...allKeys].filter(c => !priorityCols.includes(c))
+  ];
+  const ws1 = XLSX.utils.json_to_sheet(personenRows, { header: orderedCols });
+  XLSX.utils.book_append_sheet(wb, ws1, 'Personen');
+
+  // Sheet 2: Huis Oudsten per jaar
+  const oudstenRows = Object.keys(huisOudsteMap).sort((a,b) => Number(b) - Number(a)).map(jaar => {
+    const id = huisOudsteMap[jaar];
+    const p = PEOPLE.find(x => getPersonId(x) === id);
+    return {
+      'Aankomstjaar': jaar,
+      'Huis Oudste': p ? plainName(p) : '(onbekend)',
+      'E-mail': p ? (p['E-mail 1'] || '') : '',
+      'Mobiel': p ? (p['Mobiel 1'] || '') : ''
+    };
+  });
+  if (oudstenRows.length > 0) {
+    const ws2 = XLSX.utils.json_to_sheet(oudstenRows);
+    XLSX.utils.book_append_sheet(wb, ws2, 'Huis Oudsten');
+  }
+
+  // Sheet 3: Events
+  if (eventsList.length > 0) {
+    const eventRows = eventsList.map(ev => {
+      const stats = getEventStats(ev.id);
+      return {
+        'Titel': ev.title,
+        'Datum': ev.date,
+        'Tijd': ev.time || '',
+        'Locatie': ev.location || '',
+        'Omschrijving': ev.description || '',
+        'Aanwezig': stats.yes,
+        'Misschien': stats.maybe,
+        'Afwezig': stats.no
+      };
+    });
+    const ws3 = XLSX.utils.json_to_sheet(eventRows);
+    XLSX.utils.book_append_sheet(wb, ws3, 'Events');
+  }
+
+  // Sheet 4: Aanwezigheid per persoon per event (long format)
+  const attendanceRows = [];
+  Object.entries(attendanceMap).forEach(([pid, eventStatuses]) => {
+    const p = PEOPLE.find(x => getPersonId(x) === pid);
+    if (!p) return;
+    Object.entries(eventStatuses).forEach(([eventId, status]) => {
+      const ev = eventsList.find(e => e.id === eventId);
+      if (!ev) return;
+      attendanceRows.push({
+        'Naam': plainName(p),
+        'Aankomstjaar': p['Aankomstjaar'] || '',
+        'Event': ev.title,
+        'Datum': ev.date,
+        'Status': status === 'yes' ? 'Aanwezig' : status === 'no' ? 'Afwezig' : 'Misschien'
+      });
+    });
+  });
+  if (attendanceRows.length > 0) {
+    const ws4 = XLSX.utils.json_to_sheet(attendanceRows);
+    XLSX.utils.book_append_sheet(wb, ws4, 'Aanwezigheid');
+  }
+
+  // Sheet 5: Contactpersonen
+  const contactRows = CONTACT_ROLES.map(role => {
+    const c = contactsMap[role.key] || {};
+    return {
+      'Rol': role.title,
+      'Naam': c.naam || '',
+      'E-mail': c.email || '',
+      'Telefoon': c.telefoon || '',
+      'Notitie': c.notitie || ''
+    };
+  });
+  const ws5 = XLSX.utils.json_to_sheet(contactRows);
+  XLSX.utils.book_append_sheet(wb, ws5, 'Contactpersonen');
+
+  // Download
+  const today = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `OD35_export_${today}.xlsx`);
+});
+
+// ── Initialisatie ────────────────────────────────────────────────────────────
+async function init() {
+
+  // Herstel admin sessie als die nog actief is
+  const { data: { user } } = await db.auth.getUser();
+  adminUser = user;
+  updateAdminUI();
+
+  try {
+    PEOPLE = await loadFromSupabase();
+  } catch(e) {
+    console.error('Kon data niet laden:', e);
+    alert('Kon de ledenlijst niet laden. Controleer de verbinding en ververs de pagina.');
+    return;
+  }
+  // Search tekst
+  PEOPLE.forEach(p => { p._searchText = buildSearchText(p); });
+
+  // Jaar filter opbouwen
+  const jaarFilterEl = document.getElementById('jaar-filter');
+  while (jaarFilterEl.options.length > 1) jaarFilterEl.remove(1);
+  const years = [...new Set(PEOPLE.map(p => p['Aankomstjaar']).filter(Boolean))].sort((a,b) => b-a);
+  years.forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    jaarFilterEl.appendChild(opt);
+  });
+
+  // Alfabet opbouwen
+  const alphabetEl = document.getElementById('alphabet');
+  if (alphabetEl) {
+    const usedLetters = new Set(PEOPLE.map(p => (p['Achternaam'] || '').charAt(0).toUpperCase()).filter(c => /[A-Z]/.test(c)));
+    alphabetEl.innerHTML = '';
+    const allBtn = document.createElement('button');
+    allBtn.className = 'alpha-btn active'; allBtn.dataset.letter = ''; allBtn.textContent = 'Alle';
+    alphabetEl.appendChild(allBtn);
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'alpha-btn'; btn.dataset.letter = letter; btn.textContent = letter;
+      if (!usedLetters.has(letter)) btn.disabled = true;
+      alphabetEl.appendChild(btn);
+    });
+  }
+
+  updateStats();
+  render();
+}
+
+init();
+</script>
+
+<!-- Admin FAB knop -->
+<button class="admin-fab" id="admin-fab" title="Admin inloggen">⚙</button>
+
+<!-- Login modal -->
+<div class="modal-overlay hidden" id="login-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="close-login-modal">✕</button>
+    <h3>Admin inloggen</h3>
+    <p class="modal-sub">Alleen beheerders kunnen personen toevoegen of bewerken.</p>
+    <form id="login-form">
+      <div class="login-field">
+        <label>E-mailadres</label>
+        <input type="email" id="login-email" required autocomplete="email" placeholder="admin@oud-delft35.nl">
+      </div>
+      <div class="login-field">
+        <label>Wachtwoord</label>
+        <input type="password" id="login-password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="login-btn" id="login-submit">Inloggen</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Persoon toevoegen/bewerken modal -->
+<div class="modal-overlay hidden" id="person-modal">
+  <div class="modal-box wide">
+    <button class="modal-close" id="close-person-modal">✕</button>
+    <h3 id="person-modal-title">Persoon toevoegen</h3>
+    <p class="modal-sub">Vul de velden in. Alleen Achternaam is verplicht.</p>
+    <form id="person-form">
+      <div class="mf-section">Naam</div>
+      <div class="mf-grid">
+        <div class="mf-field">
+          <label>Achternaam *</label>
+          <input type="text" id="pf-achternaam" required placeholder="De Vries">
+        </div>
+        <div class="mf-field">
+          <label>Tussenvoegsel</label>
+          <input type="text" id="pf-tussenvoegsel" placeholder="van den">
+        </div>
+        <div class="mf-field">
+          <label>Voorletters</label>
+          <input type="text" id="pf-voorletters" placeholder="J.P.">
+        </div>
+        <div class="mf-field">
+          <label>Voornaam</label>
+          <input type="text" id="pf-voornaam" placeholder="Jan">
+        </div>
+        <div class="mf-field">
+          <label>Roepnaam</label>
+          <input type="text" id="pf-roepnaam" placeholder="Janneman">
+        </div>
+        <div class="mf-field">
+          <label>Titel</label>
+          <input type="text" id="pf-titel" placeholder="Ir., Dr., etc.">
+        </div>
+      </div>
+
+      <div class="mf-section">Lidmaatschap</div>
+      <div class="mf-grid">
+        <div class="mf-field">
+          <label>Aankomstjaar</label>
+          <input type="number" id="pf-aankomstjaar" min="1890" max="2100" placeholder="2022">
+        </div>
+        <div class="mf-field">
+          <label>Plaats van herkomst</label>
+          <input type="text" id="pf-herkomst" placeholder="Amsterdam">
+        </div>
+      </div>
+
+      <div class="mf-section">Geboortedatum</div>
+      <div class="mf-grid">
+        <div class="mf-field">
+          <label>Geboortejaar</label>
+          <input type="number" id="pf-geboortejaar" min="1900" max="2100" placeholder="2002">
+        </div>
+        <div class="mf-field">
+          <label>Geboortemaand (1-12)</label>
+          <input type="number" id="pf-geboortemaand" min="1" max="12" placeholder="6">
+        </div>
+        <div class="mf-field">
+          <label>Geboortedag (1-31)</label>
+          <input type="number" id="pf-geboortedag" min="1" max="31" placeholder="15">
+        </div>
+      </div>
+
+      <div class="mf-section">Contact</div>
+      <div class="mf-grid">
+        <div class="mf-field">
+          <label>E-mail 1</label>
+          <input type="email" id="pf-email1" placeholder="jan@voorbeeld.nl">
+        </div>
+        <div class="mf-field">
+          <label>E-mail 2</label>
+          <input type="email" id="pf-email2">
+        </div>
+        <div class="mf-field">
+          <label>E-mail 3</label>
+          <input type="email" id="pf-email3">
+        </div>
+        <div class="mf-field">
+          <label>Mobiel 1</label>
+          <input type="tel" id="pf-mobiel1" placeholder="06-12345678">
+        </div>
+        <div class="mf-field">
+          <label>Mobiel 2</label>
+          <input type="tel" id="pf-mobiel2">
+        </div>
+        <div class="mf-field">
+          <label>Mobiel 3</label>
+          <input type="tel" id="pf-mobiel3">
+        </div>
+        <div class="mf-field">
+          <label>Mobiel 4</label>
+          <input type="tel" id="pf-mobiel4">
+        </div>
+      </div>
+
+      <div class="mf-section">Adres</div>
+      <div class="mf-grid">
+        <div class="mf-field span2">
+          <label>Adres 1</label>
+          <input type="text" id="pf-adres1" placeholder="Keizersgracht 123">
+        </div>
+        <div class="mf-field span2">
+          <label>Adres 2</label>
+          <input type="text" id="pf-adres2">
+        </div>
+        <div class="mf-field">
+          <label>Postcode</label>
+          <input type="text" id="pf-postcode" placeholder="1234 AB">
+        </div>
+        <div class="mf-field">
+          <label>Plaats</label>
+          <input type="text" id="pf-plaats" placeholder="Amsterdam">
+        </div>
+        <div class="mf-field">
+          <label>Land</label>
+          <input type="text" id="pf-land" placeholder="Nederland">
+        </div>
+      </div>
+
+      <div class="mf-section">Status</div>
+      <div class="mf-grid">
+        <div class="mf-field" style="flex-direction:row;align-items:center;gap:0.6rem;">
+          <input type="checkbox" id="pf-overleden" style="width:auto;accent-color:var(--burgundy);">
+          <label for="pf-overleden" style="text-transform:none;letter-spacing:0;font-size:0.9rem;cursor:pointer;">Persoon is overleden</label>
+        </div>
+      </div>
+
+      <div class="mf-actions">
+        <button type="submit" class="mf-save" id="person-save-btn">Opslaan</button>
+        <button type="button" class="mf-cancel" id="cancel-person-btn">Annuleren</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>
