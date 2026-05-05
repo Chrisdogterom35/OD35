@@ -1662,6 +1662,363 @@
     margin: 0.5rem 0;
   }
 
+/* ==================== FOTO'S TAB ==================== */
+.fotos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.fotos-add-btn {
+  background: var(--burgundy);
+  color: var(--paper);
+  border: none;
+  padding: 0.55rem 1.1rem;
+  font-family: 'Lora', serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+.fotos-add-btn:hover { background: var(--burgundy-deep); }
+
+/* Breadcrumb */
+.breadcrumb-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Lora', serif;
+  font-size: 0.95rem;
+  color: var(--burgundy);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.breadcrumb-back:hover { text-decoration: underline; }
+#fotos-breadcrumb h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0.25rem 0 0;
+}
+
+/* Album grid */
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 768px) { .album-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .album-grid { grid-template-columns: 1fr; } }
+
+.album-card {
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+  position: relative;
+}
+.album-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.album-thumb {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+  background: var(--line-soft);
+}
+.album-thumb-placeholder {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: var(--line-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: var(--gray);
+}
+.album-meta {
+  padding: 0.75rem 0.9rem 0.9rem;
+}
+.album-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 0.2rem;
+}
+.album-beschrijving {
+  font-family: 'Lora', serif;
+  font-size: 0.82rem;
+  color: var(--gray);
+  font-style: italic;
+  margin: 0 0 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.album-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--gray);
+  text-transform: uppercase;
+}
+.album-delete-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.album-card:hover .album-delete-btn { opacity: 1; }
+
+/* Photo grid */
+.foto-grid {
+  columns: 4;
+  column-gap: 0.75rem;
+}
+@media (max-width: 900px) { .foto-grid { columns: 3; } }
+@media (max-width: 600px) { .foto-grid { columns: 2; } }
+@media (max-width: 380px) { .foto-grid { columns: 1; } }
+
+.foto-item {
+  break-inside: avoid;
+  margin-bottom: 0.75rem;
+  position: relative;
+  cursor: pointer;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--line-soft);
+}
+.foto-item img {
+  width: 100%;
+  display: block;
+  transition: opacity 0.15s;
+}
+.foto-item:hover img { opacity: 0.88; }
+.foto-caption {
+  font-family: 'Lora', serif;
+  font-size: 0.78rem;
+  color: var(--gray);
+  font-style: italic;
+  padding: 0.3rem 0.4rem 0.4rem;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+}
+.foto-delete-btn {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.foto-item:hover .foto-delete-btn { opacity: 1; }
+
+/* Lightbox */
+.foto-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+.foto-lightbox img {
+  max-width: min(90vw, 1100px);
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 2px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.foto-lightbox-caption {
+  font-family: 'Lora', serif;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.75);
+  font-style: italic;
+  text-align: center;
+  max-width: 600px;
+}
+.foto-lightbox-close {
+  position: fixed;
+  top: 1rem;
+  right: 1.25rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+.foto-lightbox-close:hover { opacity: 1; }
+.foto-lightbox-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: #fff;
+  font-size: 1.8rem;
+  width: 48px;
+  height: 64px;
+  cursor: pointer;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.foto-lightbox-nav:hover { background: rgba(255,255,255,0.22); }
+.foto-lightbox-prev { left: 0.75rem; }
+.foto-lightbox-next { right: 0.75rem; }
+.foto-lightbox-counter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.1em;
+}
+
+/* Upload area */
+.foto-upload-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+.foto-upload-area {
+  border: 2px dashed var(--burgundy);
+  border-radius: 3px;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--gray);
+  font-family: 'Lora', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+.foto-upload-area:hover, .foto-upload-area.dragover {
+  background: rgba(139,0,0,0.04);
+}
+.foto-upload-area input[type="file"] {
+  display: none;
+}
+.foto-upload-icon { font-size: 2rem; margin-bottom: 0.5rem; color: var(--burgundy); opacity: 0.6; }
+.foto-upload-progress {
+  margin-top: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--gray);
+  letter-spacing: 0.05em;
+}
+
+/* Album form modal */
+.album-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 8000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.album-form-box {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1.75rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.album-form-box h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+  color: var(--ink);
+}
+.album-form-box label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 0.3rem;
+}
+.album-form-box input,
+.album-form-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Lora', serif;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 0.5rem 0.65rem;
+  margin-bottom: 1rem;
+}
+.album-form-box textarea { height: 80px; resize: vertical; }
+.album-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* Foto's upload toggle button */
+.fotos-upload-toggle {
+  background: transparent;
+  border: 1px solid var(--burgundy);
+  color: var(--burgundy);
+  padding: 0.45rem 0.9rem;
+  font-family: 'Lora', serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 2px;
+  margin-bottom: 1rem;
+  transition: background 0.15s, color 0.15s;
+}
+.fotos-upload-toggle:hover { background: var(--burgundy); color: var(--paper); }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1704,6 +2061,7 @@
   <button class="tab-btn" data-tab="agenda">Agenda</button>
   <button class="tab-btn" data-tab="contacten">Contacten</button>
   <button class="tab-btn" data-tab="geschiedenis">Geschiedenis</button>
+  <button class="tab-btn" data-tab="fotos">Foto's</button>
 </nav>
 
 <!-- ==================== TAB: PERSONEN ==================== -->
@@ -1801,6 +2159,15 @@
     </div>
   </div>
 </div><!-- /panel-geschiedenis -->
+
+<!-- ==================== TAB: FOTO'S ==================== -->
+<div class="tab-panel" id="panel-fotos">
+  <div class="fotos-header">
+    <div id="fotos-breadcrumb"></div>
+    <button class="fotos-add-btn" id="fotos-album-btn" style="display:none">+ Nieuw album</button>
+  </div>
+  <div id="fotos-content"></div>
+</div><!-- /panel-fotos -->
 
 <footer>
   Oude Delft 35 · oud-huisgenoten register · 401 personen · 1896–2024
@@ -2819,6 +3186,7 @@ document.getElementById('tab-nav').addEventListener('click', e => {
   if (tab === 'agenda') renderEvents();
   if (tab === 'contacten') renderContacts();
   if (tab === 'geschiedenis') renderHistory();
+  if (tab === 'fotos') { loadAlbums().then(renderFotosTab); }
 });
 
 // ==================== AGENDA ====================
@@ -3759,6 +4127,358 @@ async function init() {
 }
 
 init();
+
+// ==================== FOTO'S ====================
+let albumsList = [];
+let currentAlbumId = null;
+let fotosList = [];
+let lightboxIndex = 0;
+
+async function loadAlbums() {
+  try {
+    const { data: albums, error } = await db.from('albums').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    const { data: fotos } = await db.from('fotos').select('album_id');
+    const counts = {};
+    (fotos || []).forEach(f => { counts[f.album_id] = (counts[f.album_id] || 0) + 1; });
+    albumsList = (albums || []).map(a => ({ ...a, foto_count: counts[a.id] || 0 }));
+  } catch (e) {
+    console.error('loadAlbums error:', e);
+    albumsList = [];
+  }
+}
+
+async function loadFotos(albumId) {
+  try {
+    const { data, error } = await db.from('fotos').select('*').eq('album_id', albumId).order('volgorde').order('created_at');
+    if (error) throw error;
+    fotosList = data || [];
+  } catch (e) {
+    console.error('loadFotos error:', e);
+    fotosList = [];
+  }
+}
+
+function renderFotosTab() {
+  if (currentAlbumId === null) {
+    renderAlbumGrid();
+  } else {
+    renderAlbumFotos(currentAlbumId);
+  }
+}
+
+function renderAlbumGrid() {
+  const btn = document.getElementById('fotos-album-btn');
+  if (btn) btn.style.display = isAdmin() ? '' : 'none';
+  if (btn) btn.onclick = showAlbumForm;
+
+  const bc = document.getElementById('fotos-breadcrumb');
+  if (bc) bc.innerHTML = '<h2 style="font-family:\'Cormorant Garamond\',serif;font-size:1.8rem;font-weight:600;margin:0;color:var(--ink);">Foto\'s</h2>';
+
+  const content = document.getElementById('fotos-content');
+  if (!content) return;
+
+  if (albumsList.length === 0) {
+    content.innerHTML = '<div class="empty-state"><div class="icon">📷</div><p>Nog geen fotoalbums aangemaakt.</p></div>';
+    return;
+  }
+
+  // Fetch first photo per album for thumbnails
+  const thumbPromises = albumsList.map(album =>
+    db.from('fotos').select('url').eq('album_id', album.id).order('volgorde').order('created_at').limit(1)
+      .then(({ data }) => ({ id: album.id, url: data && data[0] ? data[0].url : null }))
+  );
+
+  Promise.all(thumbPromises).then(thumbs => {
+    const thumbMap = {};
+    thumbs.forEach(t => { thumbMap[t.id] = t.url; });
+
+    let html = '<div class="album-grid">';
+    albumsList.forEach(album => {
+      const thumb = thumbMap[album.id];
+      const thumbHtml = thumb
+        ? `<img class="album-thumb" src="${escapeHtml(thumb)}" alt="" loading="lazy">`
+        : `<div class="album-thumb-placeholder">📷</div>`;
+      const deleteBtn = isAdmin()
+        ? `<button class="album-delete-btn" data-id="${escapeHtml(album.id)}" title="Album verwijderen" onclick="deleteAlbum(event,'${escapeHtml(album.id)}')">✕</button>`
+        : '';
+      html += `
+        <div class="album-card" data-id="${escapeHtml(album.id)}" onclick="openAlbum('${escapeHtml(album.id)}')">
+          ${thumbHtml}
+          ${deleteBtn}
+          <div class="album-meta">
+            <div class="album-name">${escapeHtml(album.naam)}</div>
+            ${album.beschrijving ? `<div class="album-beschrijving">${escapeHtml(album.beschrijving)}</div>` : ''}
+            <div class="album-count">${album.foto_count} foto${album.foto_count !== 1 ? "'s" : ''}</div>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  });
+}
+
+async function openAlbum(albumId) {
+  currentAlbumId = albumId;
+  await loadFotos(albumId);
+  renderAlbumFotos(albumId);
+}
+
+function renderAlbumFotos(albumId) {
+  const album = albumsList.find(a => a.id === albumId);
+  const albumNaam = album ? album.naam : 'Album';
+
+  const btn = document.getElementById('fotos-album-btn');
+  if (btn) btn.style.display = 'none';
+
+  const bc = document.getElementById('fotos-breadcrumb');
+  if (bc) bc.innerHTML = `
+    <button class="breadcrumb-back" onclick="backToAlbums()">← Alle albums</button>
+    <h2>${escapeHtml(albumNaam)}</h2>`;
+
+  const content = document.getElementById('fotos-content');
+  if (!content) return;
+
+  let topHtml = '';
+  if (isAdmin()) {
+    topHtml = `<button class="fotos-upload-toggle" id="fotos-upload-toggle" onclick="toggleUploadSection()">↑ Foto's uploaden</button>
+    <div class="foto-upload-section" id="foto-upload-section" style="display:none">
+      <div class="foto-upload-area" id="foto-upload-area">
+        <div class="foto-upload-icon">📷</div>
+        <div>Klik om foto's te kiezen, of sleep ze hierheen</div>
+        <div style="font-size:0.8rem;margin-top:0.3rem;opacity:0.7;">JPG, PNG, WEBP — meerdere tegelijk mogelijk</div>
+        <input type="file" id="foto-file-input" accept="image/*" multiple>
+      </div>
+      <div class="foto-upload-progress" id="foto-upload-progress"></div>
+    </div>`;
+  }
+
+  let fotosHtml = '';
+  if (fotosList.length === 0) {
+    fotosHtml = '<div class="empty-state"><div class="icon">🖼</div><p>Nog geen foto\'s in dit album.</p></div>';
+  } else {
+    fotosHtml = '<div class="foto-grid">';
+    fotosList.forEach((foto, idx) => {
+      const deleteBtn = isAdmin()
+        ? `<button class="foto-delete-btn" title="Foto verwijderen" onclick="deleteFoto(event,'${escapeHtml(foto.id)}','${escapeHtml(foto.url)}')">✕</button>`
+        : '';
+      fotosHtml += `
+        <div class="foto-item" onclick="openLightbox(${idx})">
+          <img src="${escapeHtml(foto.url)}" alt="${escapeHtml(foto.bijschrift || '')}" loading="lazy">
+          ${foto.bijschrift ? `<div class="foto-caption">${escapeHtml(foto.bijschrift)}</div>` : ''}
+          ${deleteBtn}
+        </div>`;
+    });
+    fotosHtml += '</div>';
+  }
+
+  content.innerHTML = topHtml + fotosHtml;
+
+  // Wire up upload area
+  if (isAdmin()) {
+    const area = document.getElementById('foto-upload-area');
+    const fileInput = document.getElementById('foto-file-input');
+    if (area && fileInput) {
+      area.addEventListener('click', () => fileInput.click());
+      area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+      area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+      area.addEventListener('drop', e => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        uploadFotos(e.dataTransfer.files, albumId);
+      });
+      fileInput.addEventListener('change', () => uploadFotos(fileInput.files, albumId));
+    }
+  }
+}
+
+function toggleUploadSection() {
+  const sec = document.getElementById('foto-upload-section');
+  if (!sec) return;
+  sec.style.display = sec.style.display === 'none' ? '' : 'none';
+}
+
+function backToAlbums() {
+  currentAlbumId = null;
+  fotosList = [];
+  loadAlbums().then(renderFotosTab);
+}
+
+// Lightbox
+function openLightbox(idx) {
+  lightboxIndex = idx;
+  renderLightbox();
+}
+
+function renderLightbox() {
+  const existing = document.getElementById('foto-lightbox-overlay');
+  if (existing) existing.remove();
+
+  if (fotosList.length === 0) return;
+  const foto = fotosList[lightboxIndex];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'foto-lightbox';
+  overlay.id = 'foto-lightbox-overlay';
+  overlay.innerHTML = `
+    <button class="foto-lightbox-close" title="Sluiten" onclick="closeLightbox()">✕</button>
+    <img src="${escapeHtml(foto.url)}" alt="${escapeHtml(foto.bijschrift || '')}">
+    ${foto.bijschrift ? `<div class="foto-lightbox-caption">${escapeHtml(foto.bijschrift)}</div>` : ''}
+    <div class="foto-lightbox-counter">${lightboxIndex + 1} / ${fotosList.length}</div>
+    ${lightboxIndex > 0 ? `<button class="foto-lightbox-nav foto-lightbox-prev" onclick="lightboxNav(-1)">&#8249;</button>` : ''}
+    ${lightboxIndex < fotosList.length - 1 ? `<button class="foto-lightbox-nav foto-lightbox-next" onclick="lightboxNav(1)">&#8250;</button>` : ''}
+  `;
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeLightbox(); });
+  document.body.appendChild(overlay);
+
+  // Keyboard nav
+  overlay._keyHandler = e => {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft' && lightboxIndex > 0) lightboxNav(-1);
+    if (e.key === 'ArrowRight' && lightboxIndex < fotosList.length - 1) lightboxNav(1);
+  };
+  document.addEventListener('keydown', overlay._keyHandler);
+}
+
+function lightboxNav(dir) {
+  lightboxIndex = Math.max(0, Math.min(fotosList.length - 1, lightboxIndex + dir));
+  renderLightbox();
+}
+
+function closeLightbox() {
+  const overlay = document.getElementById('foto-lightbox-overlay');
+  if (overlay) {
+    document.removeEventListener('keydown', overlay._keyHandler);
+    overlay.remove();
+  }
+}
+
+// Upload
+async function uploadFotos(files, albumId) {
+  if (!files || files.length === 0) return;
+  const progress = document.getElementById('foto-upload-progress');
+  const fileArr = Array.from(files);
+  let done = 0;
+  const total = fileArr.length;
+  if (progress) progress.textContent = `Bezig met uploaden: 0 / ${total}`;
+
+  for (const file of fileArr) {
+    try {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const uuid = crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2);
+      const path = `${albumId}/${uuid}.${ext}`;
+
+      const { error: upErr } = await db.storage.from('fotos').upload(path, file, { cacheControl: '3600', upsert: false });
+      if (upErr) throw upErr;
+
+      const { data: urlData } = db.storage.from('fotos').getPublicUrl(path);
+      const url = urlData.publicUrl;
+
+      const { error: insErr } = await db.from('fotos').insert({ album_id: albumId, url, volgorde: 0 });
+      if (insErr) throw insErr;
+
+      done++;
+      if (progress) progress.textContent = `Geüpload: ${done} / ${total}`;
+    } catch (e) {
+      console.error('Upload fout:', e);
+      if (progress) progress.textContent = `Fout bij uploaden van ${file.name}: ${e.message}`;
+    }
+  }
+
+  if (progress) progress.textContent = `Klaar! ${done} foto${done !== 1 ? "'s" : ''} geüpload.`;
+  await loadFotos(albumId);
+  await loadAlbums();
+  renderAlbumFotos(albumId);
+}
+
+// Delete album
+async function deleteAlbum(e, albumId) {
+  e.stopPropagation();
+  const album = albumsList.find(a => a.id === albumId);
+  if (!confirm(`Album "${album ? album.naam : albumId}" en alle foto's definitief verwijderen?`)) return;
+  try {
+    // Delete all photos from storage first
+    const { data: fotos } = await db.from('fotos').select('url').eq('album_id', albumId);
+    if (fotos && fotos.length > 0) {
+      const paths = fotos.map(f => {
+        const parts = f.url.split('/fotos/');
+        return parts.length > 1 ? decodeURIComponent(parts[1]) : null;
+      }).filter(Boolean);
+      if (paths.length > 0) await db.storage.from('fotos').remove(paths);
+    }
+    const { error } = await db.from('albums').delete().eq('id', albumId);
+    if (error) throw error;
+    await loadAlbums();
+    renderFotosTab();
+  } catch (e) {
+    alert('Fout bij verwijderen: ' + e.message);
+  }
+}
+
+// Delete foto
+async function deleteFoto(e, fotoId, fotoUrl) {
+  e.stopPropagation();
+  if (!confirm('Deze foto definitief verwijderen?')) return;
+  try {
+    const parts = fotoUrl.split('/fotos/');
+    if (parts.length > 1) {
+      const path = decodeURIComponent(parts[1]);
+      await db.storage.from('fotos').remove([path]);
+    }
+    const { error } = await db.from('fotos').delete().eq('id', fotoId);
+    if (error) throw error;
+    await loadFotos(currentAlbumId);
+    await loadAlbums();
+    renderAlbumFotos(currentAlbumId);
+  } catch (e) {
+    alert('Fout bij verwijderen: ' + e.message);
+  }
+}
+
+// Album form
+function showAlbumForm() {
+  const existing = document.getElementById('album-form-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'album-form-overlay';
+  overlay.id = 'album-form-overlay';
+  overlay.innerHTML = `
+    <div class="album-form-box">
+      <h3>Nieuw album</h3>
+      <label>Naam <span style="color:var(--burgundy)">*</span></label>
+      <input type="text" id="album-form-naam" placeholder="Bijv. Lustrum 2023" required>
+      <label>Beschrijving (optioneel)</label>
+      <textarea id="album-form-beschrijving" placeholder="Korte omschrijving van het album…"></textarea>
+      <div class="album-form-actions">
+        <button class="cancel-btn" onclick="closeAlbumForm()" style="background:transparent;border:1px solid var(--line);color:var(--gray);padding:0.5rem 1rem;cursor:pointer;border-radius:2px;font-family:'Lora',serif;">Annuleren</button>
+        <button class="save-btn" onclick="submitAlbumForm()" style="background:var(--burgundy);color:var(--paper);padding:0.5rem 1.1rem;border:none;cursor:pointer;border-radius:2px;font-family:'Lora',serif;">Opslaan</button>
+      </div>
+    </div>`;
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeAlbumForm(); });
+  document.body.appendChild(overlay);
+  document.getElementById('album-form-naam').focus();
+}
+
+function closeAlbumForm() {
+  const overlay = document.getElementById('album-form-overlay');
+  if (overlay) overlay.remove();
+}
+
+async function submitAlbumForm() {
+  const naam = (document.getElementById('album-form-naam').value || '').trim();
+  const beschrijving = (document.getElementById('album-form-beschrijving').value || '').trim();
+  if (!naam) { alert('Naam is verplicht.'); return; }
+  try {
+    const { error } = await db.from('albums').insert({ naam, beschrijving: beschrijving || null });
+    if (error) throw error;
+    closeAlbumForm();
+    await loadAlbums();
+    renderFotosTab();
+  } catch (e) {
+    alert('Fout bij aanmaken album: ' + e.message);
+  }
+}
 </script>
 
 <!-- Admin FAB knop -->
