@@ -14,7 +14,14 @@ module.exports = async function handler(req, res) {
   }
 
   if (!process.env.RESEND_API_KEY) {
-    return res.status(200).json({ ok: true, warn: 'Geen RESEND_API_KEY' });
+    return res.status(200).json({
+      ok: true,
+      warn: 'Geen RESEND_API_KEY',
+      vercel_env: process.env.VERCEL_ENV || 'unknown',
+      vercel_url: process.env.VERCEL_URL || 'unknown',
+      vercel_project: process.env.VERCEL_PROJECT_PRODUCTION_URL || 'unknown',
+      env_keys_starting_with_R: Object.keys(process.env).filter(k => k.startsWith('R')),
+    });
   }
 
   const to = Array.isArray(adminEmails) && adminEmails.length > 0 ? adminEmails : ['omegaksiod35@gmail.com'];
