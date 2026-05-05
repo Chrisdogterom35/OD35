@@ -1154,6 +1154,29 @@
     border-color: var(--burgundy);
     color: var(--burgundy);
   }
+  .role-desc-wrap { position: relative; }
+  .desc-edit-btn {
+    position: absolute; top: 0; right: 0;
+    background: none; border: none; cursor: pointer;
+    color: var(--gray-light); font-size: 0.85rem; padding: 0 0.2rem;
+    line-height: 1;
+  }
+  .desc-edit-btn:hover { color: var(--burgundy); }
+  .desc-textarea {
+    width: 100%; padding: 0.5rem 0.6rem;
+    border: 1px solid var(--burgundy); background: var(--paper);
+    font-family: 'Lora', serif; font-size: 0.85rem;
+    color: var(--ink); resize: vertical; border-radius: 2px;
+    font-style: italic;
+  }
+  .desc-save-btn {
+    background: var(--burgundy); color: white; border: none;
+    padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; border-radius: 2px;
+  }
+  .desc-cancel-btn {
+    background: none; border: 1px solid var(--line); color: var(--gray);
+    padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; border-radius: 2px;
+  }
   .contact-edit-form {
     display: none;
     margin-top: 1rem;
@@ -2933,7 +2956,19 @@ function renderContacts() {
     html += `<div class="contact-card" data-role="${role.key}">`;
     html += `<div class="role-icon">${role.icon}</div>`;
     html += `<h3>${role.title}</h3>`;
-    html += `<p class="role-desc">${escapeHtml(c.beschrijving || role.desc)}</p>`;
+    const descTekst = c.beschrijving || role.desc;
+    html += `<div class="role-desc-wrap">`;
+    html += `<p class="role-desc" id="desc-text-${role.key}">${escapeHtml(descTekst)}</p>`;
+    if (isAdmin()) {
+      html += `<button class="desc-edit-btn" data-role="${role.key}" title="Beschrijving bewerken">✎</button>`;
+      html += `<div class="desc-edit-area" id="desc-edit-${role.key}" style="display:none;">`;
+      html += `<textarea class="desc-textarea" data-role="${role.key}" rows="3">${escapeHtml(c.beschrijving || '')}</textarea>`;
+      html += `<div style="display:flex;gap:0.5rem;margin-top:0.4rem;">`;
+      html += `<button class="desc-save-btn" data-role="${role.key}" data-default="${escapeHtml(role.desc)}">Opslaan</button>`;
+      html += `<button class="desc-cancel-btn" data-role="${role.key}">Annuleren</button>`;
+      html += `</div></div>`;
+    }
+    html += `</div>`;
     html += `<div class="contact-display">`;
     html += `<div class="contact-name ${hasName ? '' : 'empty'}">${hasName ? escapeHtml(c.naam) : 'Nog niet ingevuld'}</div>`;
     if (c.email) html += `<div class="contact-detail">✉ <a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a></div>`;
@@ -2962,8 +2997,6 @@ function renderContacts() {
     html += `<input type="email" name="email" placeholder="E-mail" value="${escapeHtml(c.email || '')}">`;
     html += `<input type="tel" name="telefoon" placeholder="Telefoonnummer" value="${escapeHtml(c.telefoon || '')}">`;
     html += `<input type="text" name="notitie" placeholder="Korte notitie (optioneel)" value="${escapeHtml(c.notitie || '')}">`;
-    html += `<label class="picker-label" style="margin-top:0.5rem;">Beschrijving van de rol</label>`;
-    html += `<textarea name="beschrijving" rows="3" placeholder="${escapeHtml(role.desc)}" style="width:100%;padding:0.55rem 0.7rem;border:1px solid var(--line);background:var(--paper);font-family:Lora,serif;font-size:0.9rem;resize:vertical;">${escapeHtml(c.beschrijving || '')}</textarea>`;
     html += `<div class="form-buttons">`;
     html += `<button class="save-btn" data-action="save-contact" data-role="${role.key}">Opslaan</button>`;
     html += `<button class="cancel-btn" data-action="cancel-contact" data-role="${role.key}">Annuleren</button>`;
@@ -2983,6 +3016,38 @@ document.getElementById('contacts-grid').addEventListener('change', e => {
 });
 
 document.getElementById('contacts-grid').addEventListener('click', e => {
+  // Inline beschrijving bewerken
+  if (e.target.matches('.desc-edit-btn')) {
+    const role = e.target.dataset.role;
+    document.getElementById('desc-text-' + role).style.display = 'none';
+    e.target.style.display = 'none';
+    document.getElementById('desc-edit-' + role).style.display = 'block';
+    return;
+  }
+  if (e.target.matches('.desc-cancel-btn')) {
+    const role = e.target.dataset.role;
+    document.getElementById('desc-text-' + role).style.display = '';
+    document.querySelector(`.desc-edit-btn[data-role="${role}"]`).style.display = '';
+    document.getElementById('desc-edit-' + role).style.display = 'none';
+    return;
+  }
+  if (e.target.matches('.desc-save-btn')) {
+    const role = e.target.dataset.role;
+    const textarea = document.querySelector(`.desc-textarea[data-role="${role}"]`);
+    const waarde = textarea.value.trim();
+    contactsMap[role].beschrijving = waarde;
+    db.from('contactpersonen').upsert({
+      rol: role,
+      naam: contactsMap[role].naam || '',
+      email: contactsMap[role].email || '',
+      telefoon: contactsMap[role].telefoon || '',
+      notitie: contactsMap[role].notitie || '',
+      beschrijving: waarde || null
+    }, { onConflict: 'rol' }).then();
+    renderContacts();
+    return;
+  }
+
   const role = e.target.dataset.role;
   if (!role) return;
   const card = e.target.closest('.contact-card');
