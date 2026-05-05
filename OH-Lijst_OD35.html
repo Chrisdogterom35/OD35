@@ -1725,6 +1725,16 @@
   position: relative;
 }
 .album-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.album-card.dragging { opacity: 0.35; transform: scale(0.97); box-shadow: none; }
+.album-card.drag-over { outline: 2px solid var(--burgundy); outline-offset: 2px; transform: translateY(-2px); }
+.album-drag-handle {
+  position: absolute; bottom: 0.4rem; left: 0.4rem;
+  color: rgba(255,255,255,0.7); font-size: 0.85rem;
+  cursor: grab; line-height: 1; padding: 0.15rem;
+  opacity: 0; transition: opacity 0.15s;
+  user-select: none;
+}
+.album-card:hover .album-drag-handle { opacity: 1; }
 .album-thumb {
   width: 100%;
   aspect-ratio: 4/3;
@@ -4150,7 +4160,7 @@ let lightboxIndex = 0;
 
 async function loadAlbums() {
   try {
-    const { data: albums, error } = await db.from('albums').select('*').order('created_at', { ascending: false });
+    const { data: albums, error } = await db.from('albums').select('*').order('volgorde', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
     if (error) throw error;
     const { data: fotos } = await db.from('fotos').select('album_id');
     const counts = {};
@@ -4219,9 +4229,10 @@ function renderAlbumGrid() {
         <div class="album-admin-btns" onclick="event.stopPropagation()">
           <button class="album-rename-btn" title="Album hernoemen" onclick="renameAlbum(event,'${escapeHtml(album.id)}','${escapeHtml(album.naam).replace(/'/g,"\\'")}')">✎</button>
           <button class="album-delete-btn" title="Album verwijderen" onclick="deleteAlbum(event,'${escapeHtml(album.id)}')">✕</button>
-        </div>` : '';
+        </div>
+        <div class="album-drag-handle" title="Slepen om volgorde te wijzigen">⠿</div>` : '';
       html += `
-        <div class="album-card" data-id="${escapeHtml(album.id)}" onclick="openAlbum('${escapeHtml(album.id)}')">
+        <div class="album-card" data-id="${escapeHtml(album.id)}" ${isAdmin() ? 'draggable="true"' : ''} onclick="openAlbum('${escapeHtml(album.id)}')">
           ${thumbHtml}
           ${adminBtns}
           <div class="album-meta">
@@ -4233,7 +4244,47 @@ function renderAlbumGrid() {
     });
     html += '</div>';
     content.innerHTML = html;
+
+    if (isAdmin()) initAlbumDrag();
   });
+}
+
+function initAlbumDrag() {
+  const grid = document.querySelector('.album-grid');
+  if (!grid) return;
+  let dragSrcId = null;
+  grid.querySelectorAll('.album-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragSrcId = card.dataset.id;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      if (!dragSrcId || dragSrcId === card.dataset.id) return;
+      const cards = [...grid.querySelectorAll('.album-card')];
+      const ids = cards.map(c => c.dataset.id);
+      const fromIdx = ids.indexOf(dragSrcId);
+      const toIdx = ids.indexOf(card.dataset.id);
+      ids.splice(fromIdx, 1);
+      ids.splice(toIdx, 0, dragSrcId);
+      const sorted = ids.map(id => albumsList.find(a => a.id === id)).filter(Boolean);
+      albumsList.length = 0;
+      sorted.forEach(a => albumsList.push(a));
+      saveAlbumVolgorde();
+      renderAlbumGrid();
+    });
+  });
+}
+
+async function saveAlbumVolgorde() {
+  await Promise.all(albumsList.map((a, i) =>
+    db.from('albums').update({ volgorde: i }).eq('id', a.id)
+  ));
 }
 
 async function openAlbum(albumId) {
