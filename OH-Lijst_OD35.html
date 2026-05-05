@@ -1293,6 +1293,62 @@
   .history-content .timeline-text {
     font-size: 0.98rem;
   }
+  .history-figure {
+    margin: 1.75rem 0 2rem;
+    text-align: center;
+  }
+  .history-figure img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    box-shadow: 2px 2px 8px rgba(26,24,18,0.10);
+    display: block;
+    margin: 0 auto;
+  }
+  .history-figure figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--gray);
+    font-family: 'Lora', serif;
+    text-align: center;
+  }
+  .history-figure-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1.75rem 0 2rem;
+    justify-content: center;
+  }
+  .history-figure-row .history-figure {
+    flex: 1 1 280px;
+    max-width: 48%;
+    margin: 0;
+  }
+  @media (max-width: 600px) {
+    .history-figure-row .history-figure { max-width: 100%; }
+  }
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0 1.5rem;
+    font-size: 0.9rem;
+  }
+  .history-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    border-bottom: 2px solid var(--burgundy);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+  }
+  .history-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .history-table tr:last-child td { border-bottom: none; }
   .history-edit-btn {
     display: block;
     margin: 2rem auto 0;
@@ -3082,7 +3138,9 @@ document.getElementById('contacts-grid').addEventListener('click', e => {
 // ==================== GESCHIEDENIS ====================
 const DEFAULT_HISTORY = `# Archief OD35
 
-Een geschiedenis van Oude Delft 35 — opgesteld voor het 27e lustrum en het 135-jarig bestaan van studentenhuis OD 35.
+Een geschiedenis van Oude Delft 35 — opgesteld voor het 27e lustrum en het 135-jarig bestaan.
+
+![](archief/img01.jpg)
 
 ## Inleiding
 
@@ -3096,25 +3154,52 @@ Deze tocht begint in het heden en werkt langzamerhand terug naar het verleden, m
 
 In 2025 wonen op de Oude Delft 35 achttien jonge studenten die bijna allemaal studeren aan de TU Delft en lid zijn van het DSC.
 
+::row
+![OD 35, genomen vanaf restaurant Loetje in het voormalig legermuseum](archief/img02.jpg)
+![Bewoners van Omega Ksi, jaar 20 tot en met jaar 24](archief/img03.jpg)
+::endrow
+
 ## 2000
 
 We maken een stap van 25 jaar terug in de tijd. In de tussentijd is er weinig veranderd — nog steeds twintig studenten, een matrix en een hond.
 
+![Voorgevel OD 35, genomen in het jaar 2000](archief/img04.jpg)
+
 ## 1990
 
-In 1990 vond de laatste grote verbouwing plaats. Ze hebben toen van het huis een soort schoolbunker gemaakt waar niets meer kapot kon. Dit laatste is niet helemaal waar.
+In 1990 vond de laatste grote verbouwing plaats. In de onderstaande afbeeldingen staat steeds eerst de oude en daarna de nieuwe toestand afgebeeld. Ze hebben toen van het huis een soort schoolbunker gemaakt waar niets meer kapot kon. Dit laatste is niet helemaal waar.
+
+::row
+![Verbouwingstekening 1990 — oude toestand](archief/img05.jpg)
+![Verbouwingstekening 1990 — nieuwe toestand](archief/img06.jpg)
+::endrow
+::row
+![Verbouwingstekening 1990](archief/img07.jpg)
+![Verbouwingstekening 1990](archief/img08.jpg)
+::endrow
+::row
+![Verbouwingsdocument 1990](archief/img09.jpg)
+![Verbouwingsdocument 1990](archief/img10.jpg)
+::endrow
+![Verbouwingsdocument 1990](archief/img11.jpg)
 
 ## 1987
 
-In 1987 werd een foto gemaakt van OD 35 t/m 41 aan de Oude Delft.
+Onderstaand een foto van OD 35, genomen op 19 mei 1987.
+
+![Foto van Oude Delft 35 t/m 41, 19 mei 1987](archief/img12.jpg)
 
 ## 1975
 
-Als je vanaf het station via de Barbarasteeg de Oude Delft naar links afslaat, zie je al snel ons magische pand. Dit komt mede door het uithangbord dat hier al sinds jaar en dag hangt. Het uithangbord van Omega Ksi, gedateerd door het Archief Delft in de periode 1970–1975, hangt nog steeds boven onze deur.
+Als je vanaf het station via de Barbarasteeg de Oude Delft naar links afslaat, zie je al snel ons magische pand. Dit komt mede door het uithangbord dat hier al sinds jaar en dag hangt. Het uithangbord van Omega Ksi is gedateerd door het Archief Delft in de periode 1970–1975. Dit bordje hangt nog steeds boven onze deur.
+
+![Uithangbord Omega Ksi, ca. 1970–1975](archief/img13.jpg)
 
 ## 1967
 
 In dit jaar is ons pand ingeschreven in het register van rijksmonumenten. Daarbij staat ook vermeld welk grondperceelnummer en welke sectie in het kadaster wij staan genoteerd. Dit heeft later veel geholpen om extra informatie op te zoeken over OD 35.
+
+![Inschrijving rijksmonumentenregister, 1967](archief/img14.jpg)
 
 ## 1960
 
@@ -3122,25 +3207,55 @@ In 1960 werd een negatief gemaakt van OD 35 en OD 37. Hierop is te zien dat de r
 
 ## 1958
 
-Ook in 1958 was er een grote verbouwing, waarvan de tekeningen en documenten bewaard zijn gebleven in het Archief Delft.
+Ook in 1958 was er een grote verbouwing.
+
+::row
+![Verbouwingsdocument 1958](archief/img15.jpg)
+![Verbouwingstekening 1958](archief/img16.jpg)
+::endrow
+![Verbouwingstekening 1958](archief/img17.jpg)
 
 ## 1930
 
-Een foto uit 1930 toont dat er nog een tramspoor liep over de Oude Delft. In ons pand woonden toen al studenten, maar onze buren van nummer 23 verkochten nog piano's. Op dezelfde plek staat nu een geheel ander pand.
+Onderstaande foto is gedateerd uit 1930. We zien dat er nog een tramspoor loopt over de Oude Delft. In ons pand woonden toen al studenten, maar we zien dat onze vrienden van nummer 23 nog piano's verkochten. Ter vergelijking staat daaronder dezelfde straat in 2021.
+
+::row
+![Oude Delft in 1930](archief/img18.jpg)
+![Oude Delft in 2021](archief/img19.jpg)
+::endrow
 
 ## 1925
 
-In 1925 is er een schets gemaakt van de Oude Delft. In de verte is ons pand te zien met het rode puntdak. Gezien vanaf de Zuidwal, met rechts het Armamentarium en links Hotel Bellevue. Op de Oude Delft rijdt de stoomtram tussen de Zuidwal en Den Haag.
+In 1925 is er een schets gemaakt van de Oude Delft. In de verte zien we ons pand met het rode puntdak. De Oude Delft gezien vanaf de Zuidwal, met rechts het Armamentarium en links Hotel Bellevue. Op de Oude Delft rijdt de stoomtram tussen de Zuidwal en Den Haag.
+
+![Schets van de Oude Delft, 1925](archief/img20.jpg)
 
 ## 1922
 
-In 1922 stond het huis te koop. Een advertentie in de Delftsche Courant van 1922 laat zien dat de "vliering" nog niet werd gebruikt als kamers en dat er nog een dienstbode aanwezig was. Er worden 8 slaapkamers verhuurd, wat betekende dat er toen nog maar 8 studenten woonden. Helemaal onderaan de advertentie wordt vermeld dat het huis voor 720 gulden per jaar wordt verhuurd.
+In 1922 stond het huis te koop. Uit de advertentie in de Delftsche Courant valt op te maken dat de "vliering" nog niet werd gebruikt als kamers en dat er nog een dienstbode aanwezig was. Er worden 8 slaapkamers verhuurd, wat betekende dat er toen nog maar 8 studenten woonden. Helemaal onderaan de advertentie wordt vermeld dat het huis voor 720 gulden per jaar wordt verhuurd.
+
+![Advertentie in de Delftsche Courant voor de verkoop van OD 35, 1922](archief/img21.jpg)
 
 ## 1896 — De eerste bewoners
 
-In de slaapgang liggen almanakken tot 1895. In de almanak van 1895 staan geen leden van het corps geadresseerd op Oude Delft 35; in die van 1896 wel. Het Delftse archief heeft adreslijsten ingescand die verder teruggaan dan 1895. In deze adreslijsten staan alle adressen van personen die aangesloten waren bij de Polytechnische School, de voorganger van de TU. Uit deze lijsten zijn de volgende eerste studerende bewoners van Oude Delft 35 te achterhalen:
+In de slaapgang liggen almanakken tot 1895. In de almanak van 1895 staan geen leden van het corps geadresseerd op Oude Delft 35; in die van 1896 wel. Het Delftse archief heeft adreslijsten ingescand die verder teruggaan dan 1895, met daarin alle adressen van personen aangesloten bij de Polytechnische School. Uit deze adreslijsten konden de volgende eerste studerende bewoners worden ontdekt.
 
-J. van Hettinga Tromp (1896) · G. Kalff (1896) · W. van Houten (1896) · W. de Graaff (1896) · G.L. Tegelberg (1896) · B.J.W. Swaters (1896) · H.K. Hardenberg (1896)
+| Voornaam | Tussenvoegsel | Achternaam | Jaar |
+|---|---|---|---|
+| J. | van | Hettinga Tromp | 1896 |
+| G. | | Kalff | 1896 |
+| W. | van | Houten | 1896 |
+| W. | de | Graaff | 1896 |
+| G.L. | | Tegelberg | 1896 |
+| B.J.W. | | Swaters | 1896 |
+| H.K. | | Hardenberg | 1896 |
+
+Deze personen zijn, voor zover bekend, de eerste studerende bewoners van Oude Delft 35.
+
+::row
+![Jan van Hettinga Tromp, een van de eerste studerende bewoners van OD 35](archief/img22.jpg)
+![Gerard Louis Tegelberg](archief/img23.jpg)
+::endrow
 
 ## 1891 — Het oprichtingsjaar
 
@@ -3148,93 +3263,227 @@ Het oprichtingsjaar van ons huis. Maar hoe zijn wij hier eigenlijk bij gekomen?
 
 ## 1886 — Rector Nassau Noordewier
 
-De heer Hendrik Jan Nassau Noordewier was in 1881 leraar op het gymnasium in Delft. In 1886 werd hij rector en verhuisde hij van de Choorstraat naar Oude Delft 35. In die tijd woonde de rector samen met een aantal van zijn leerlingen op de Oude Delft 35. H.J. Nassau Noordewier heeft hier gewoond tot 1893, waarna hij verhuisde naar de Koornmarkt 41. Tijdens de "Oprichting" van ons huis woonde de rector dus nog op nummer 35.
+De heer Hendrik Jan Nassau Noordewier was in 1881 leraar op het gymnasium in Delft. In 1886 werd hij rector van dit gymnasium en verhuisde hij van de Choorstraat naar Oude Delft 35. In die tijd woonde de rector samen met een aantal van zijn leerlingen op de Oude Delft 35. H.J. Nassau Noordewier heeft hier gewoond tot 1893, waarna hij verhuisde naar de Koornmarkt 41. Tijdens de "Oprichting" van ons huis woonde de rector dus nog op nummer 35.
 
-Waarschijnlijk zijn de leerlingen die bij de rector woonden dezelfde personen als de eerste studerende bewoners uit 1896. Tussen 1892 en 1896 is er geen informatie beschikbaar over wie er op nummer 35 woonde, maar het sterke vermoeden is dat zij in 1891 zijn ingetrokken bij rector Nassau Noordewier en daarna met zijn zevenen zijn doorgegaan met studeren.
+Tussen 1892 en 1896 is er geen informatie beschikbaar over wie er op nummer 35 woonde, maar het sterke vermoeden is dat de leerlingen in 1891 zijn ingetrokken bij rector Nassau Noordewier en daarna met zijn zevenen zijn doorgegaan met studeren. Het lijkt er dan ook op dat wij pas een corpshuis zijn sinds 1896, aangezien zij toen pas stonden ingeschreven op dit adres.
 
 > Conclusie: Studentenhuis sinds 1891 — Corpshuis sinds 1896.
 
+::row
+![Adresboek uit 1886](archief/img24.jpg)
+![H.J. Nassau-Noordewier met zijn leerlingen bij zijn afscheid na 30 jaar als rector van het Delfts gymnasium](archief/img25.jpg)
+::endrow
+
 ## 1884
 
-Wie er in 1884 op Oude Delft 35 woonde is niet exact bekend, maar duidelijk is dat de toenmalige bewoner(s) op zoek waren naar een meisje van 16 jaar als hulp in de huishouding, zo blijkt uit een advertentie in de Delftsche Courant van dat jaar.
+We doen een grote stap terug naar het verleden en bereiken het jaar waarin er nog geen studenten woonden op Oude Delft 35. Wat we wél weten, is dat de bewoner(s) van toen op zoek waren naar een meisje van 16 jaar — dit is te zien in een advertentie in de Delftsche Courant van 1884.
+
+![Advertentie in de Delftsche Courant van 1884](archief/img26.jpg)
 
 ## 1880
 
-De oudste gevonden foto waarop OD 35 zichtbaar is, stamt uit 1880. Op de afbeelding is links ons dak te zien. Veel informatie valt helaas niet uit deze foto te halen, maar we zien wel dat de Zuiderkolk nog werd gebruikt als haven.
+De oudste gevonden foto waarop OD 35 zichtbaar is, stamt uit 1880. Links op de afbeelding is ons dak te zien. Veel informatie valt helaas niet uit deze foto te halen. Wel zien we dat de Zuiderkolk nog werd gebruikt als haven.
+
+![Oudste bekende foto waarop OD 35 zichtbaar is, ca. 1880](archief/img27.jpg)
 
 ## 1877
 
-De huidige huisnummering is pas in 1877 ingevoerd in Delft. Daarvoor gebruikte men wijknummers, secties en huisnummers. Via het archief kon worden achterhaald wat ons wijknummer, onze sectie en ons huisnummer waren. Ons pand stond vóór 1877 genoteerd als Wijk 1, Sectie E, no. 56.
+De huidige huisnummering is pas in 1877 ingevoerd in Delft. Daarvoor gebruikte men wijknummers, secties en huisnummers. Ons pand stond vóór 1877 genoteerd als Wijk 1, Sectie E, no. 56.
 
 ## 1856
 
-In 1856 stond het huis naast ons te koop. In de advertentie staat dat het gaat om een "dubbeld huis". Het zou dus kunnen dat vroeger het huis was samengevoegd met OD 37. Ook lezen we dat er plek is voor zeven paarden in de tuin en dat het huis doorloopt tot aan de stadswal.
+In 1856 stond het huis naast ons te koop. In de advertentie staat dat het gaat om een "dubbeld huis" — het zou dus kunnen dat vroeger het huis was samengevoegd met OD 37. Ook lezen we dat er plek is voor zeven paarden in de tuin en dat het huis doorloopt tot aan de stadswal.
+
+::row
+![Advertentie in de Delftsche Courant, 1856](archief/img28.jpg)
+![Kadasternummers met huisnummers](archief/img29.jpg)
+::endrow
 
 ## 1832
 
-Volgens het historisch GIS-register was het huis in 1832 eigendom van Arij Smits. Het lijkt erop dat Arij niet in het pand verbleef, omdat hij nog veel meer panden in eigendom had. Arij overleed op 30 maart 1815. Zijn partner, Aagje Smits geboren Rebel, nam het huis daarna over.
+Volgens het historisch GIS-register was het huis eigendom van Arij Smits. Het lijkt erop dat Arij niet in het pand verbleef, omdat hij nog veel meer panden in eigendom had. Arij overleed op 30 maart 1815. Zijn partner, Aagje Smits geboren Rebel, nam het huis daarna over.
+
+![Eigendomsakte met onderin Arij Smits](archief/img30.jpg)
 
 ## 1818
 
-Een andere eigenaar van het pand is Magdalena Pannebakker. Zij was getrouwd met Jacob Sonneveld en verbleven alleen in het voorste gedeelte van het huis, het voorhuis. Jacob overleed al in 1810 en Magdalena in 1818.
+Een andere eigenaar van het pand is Magdalena Pannebakker. Zij was getrouwd met Jacob Sonneveld en verbleven alleen in het voorste gedeelte van het huis, het voorhuis. Jacob overleed al in 1810 en Magdalena in 1818. Onderstaand staat vastgelegd wie door de jaren heen eigenaar waren van OD 35.
+
+![Eigenaren van OD 35](archief/img31.jpg)
 
 ## 1780
 
-In het hekje op ons platform staat het jaartal 1790. Dit zou moeten suggereren dat ons pand uit dat jaar stamt. Dit valt echter te betwijfelen. De oudste afbeelding van dit pand die gevonden kon worden, stamt uit 1780: een kopergravure van Stelzer, I.L.
+In het hekje op ons platform staat het jaartal 1790. Dit zou moeten suggereren dat ons pand uit dat jaar stamt. Dit valt echter te betwijfelen. De oudste afbeelding van dit pand die gevonden kon worden, stamt uit 1780 — het is een kopergravure van Stelzer, I.L.
 
-Op de gravure lijkt het pand veel kleiner dan het nu is. Als we de ramen gaan tellen, klopt het ook niet helemaal. Maar het is in ieder geval geen huis meer met een trapgevel, zoals er eerst stond. Bovendien is alleen het dak van het voorhuis zichtbaar en niet dat van het achterhuis — het achterhuis kan later zijn toegevoegd.
+Op de gravure lijkt het pand veel kleiner dan het nu is. Als we de ramen gaan tellen, klopt het ook niet helemaal. Maar het is in ieder geval geen huis meer met een trapgevel. Bovendien is alleen het dak van het voorhuis zichtbaar en niet dat van het achterhuis — het kan zijn dat dit er later aan is gebouwd.
+
+::row
+![Kopergravure van Stelzer, I.L., ca. 1780](archief/img32.jpg)
+![Huidig zicht op OD 35 vanaf de Zuiderpoort](archief/img33.jpg)
+::endrow
 
 ## 1730
 
-In 1730 verscheen een kopergravure van de Schiedamse Poort. Het lijkt erop dat het dak van OD 35 hierop zichtbaar is. We zien de Schiedamse Poort, die er stond van 1396 tot 1836, en daarachter de trapgevels van het Hollands ammunitiemagazijn. Vanuit de kamer met uitzicht op de Oude Delft zijn nog steeds twee trapgevels zichtbaar. Tegenover het dak van de tweede trapgevel zien we een dak met een kleine schoorsteen — dit zou ons dak moeten zijn.
+In 1730 verscheen een kopergravure van de Schiedamse Poort. Het lijkt erop dat het dak van OD 35 hierop zichtbaar is. We zien de Schiedamse Poort, die er stond van 1396 tot 1836, en achter de poort de trapgevels van het Hollands ammunitiemagazijn. Tegenover het dak van de tweede trapgevel zien we een dak met een kleine schoorsteen — dit zou ons dak moeten zijn.
 
 Het torentje links van ons dak is de toren van brouwerij De Papegaai. Men denkt misschien dat dit het torentje bovenop Virgiel is. Sommige papen dachten dit ook, maar het torentje stond er niet meer toen zij het pand overnamen. De papen vonden dit erg jammer en besloten het torentje er weer op te zetten, omdat ze dachten dat het er vroeger altijd had gestaan. Dit is echter absoluut niet waar — zij hebben dus onnodig een torentje op hun sociëteit gezet.
 
-> Deze tekst kun je zelf aanpassen via de knop "Geschiedenis bewerken" hieronder.`;
+![De Schiedamse Poort en een deel van de Zuidwal, gezien vanuit het zuiden, 1730](archief/img34.jpg)
+::row
+![Reconstructie van de westelijke zijgevel van het oorlogsmagazijn](archief/img35.jpg)
+![Uitzicht op de Oude Delft](archief/img36.jpg)
+::endrow
+
+## 1720
+
+In 1720 was Nicolaas Fredrick Boogaert van Amblaserdam eigenaar van Oude Delft 35. Van hem is het volgende bekend: hij promoveerde in Leiden in 1691, was Veertigraad van Delft van 1708 tot 1740, en was Deken van het chirurgijnsgilde. Van Nicolaas weten we zeker dat hij op de Oude Delft heeft gewoond.
+
+Nicolaas was zelf geen medicus, maar uit hoofde van zijn functie als deken van het chirurgijnsgilde was hij nauw betrokken bij de anatomische lessen. In zijn tweede huwelijk trouwde hij met Phillipota Martina Jacobsdr. de Brauw.
+
+::row
+![De anatomische les van Dr. Abraham Cornelisz. van Bleyswijck, Theodoor van der Schuer, ca. 1679](archief/img37.jpg)
+![Familiewapen van Boogaert](archief/img38.jpg)
+::endrow
+
+## 1675
+
+In 1675 verscheen een zeer gedetailleerde kopergravure plattegrond van de stad Delft: de Kaart Figuratief van Dirck van Bleyswijck. Hierop is ons pand te herkennen.
+
+::row
+![Detail Kaart Figuratief, 1675](archief/img39.jpg)
+![Uitvergroting Kaart Figuratief — OD 35 rood omcirkeld](archief/img40.jpg)
+::endrow
+![Kaart Figuratief, Dirck van Bleyswijck, 1675](archief/img41.jpg)
+
+Naast onze mooie geschiedenis hebben de buren op Oude Delft 39 ook een bijzonder verhaal. De VOC-Kamer Delft was een van de zes kamers van de Verenigde Oost-Indische Compagnie. De buren van Oude Delft 39 hebben zo'n bijzonder pand dat KLM heeft besloten hun pand na te maken als KLM-huisje nummer 35.
+
+::row
+![VOC-kamer voor (boven) en na (onder) de verbouwing in 1722](archief/img42.jpg)
+![KLM-huisje nummer 35](archief/img43.jpg)
+::endrow
+![Oost-Indisch Huis — KLM-huisje 35](archief/img44.jpg)
+
+## 1672
+
+We hebben nog een bijzondere huisgenoot gehad: Jacob van der Graeff, geboren op 6 maart 1635. De overgrootvader van Jacob is in totaal vijftien jaar burgemeester van Delft geweest.
+
+Jacob was betrokken bij de moordaanslag op de gebroeders De Witt. Johan de Witt verhuisde in 1669 met zijn gezin naar de Kneuterdijk, waar hij zijn laatste jaren doorbracht. Op 20 augustus 1672 werden Johan de Witt en zijn broer Cornelis de Witt vermoord door een woedende menigte in Den Haag. Jacob paste mee op de kinderen van Johan de Witt.
+
+::row
+![Wapenafbeelding Van der Graeff](archief/img45.jpg)
+![Overgrootvader van Jacob van der Graeff: Arent Jacobsz van der Graeff](archief/img46.jpg)
+::endrow
+
+## 1669
+
+Naast Nicolaas Boogaert heeft er nog een burgemeester gewoond op OD 35: Andries van der Goes.
+
+::row
+![Andries van der Goes](archief/img47.jpg)
+![Akte van eigenaren Oude Delft 35. Adresaanduiding: "Bij het tweede haventje"](archief/img48.jpg)
+::endrow
+
+## 1661 — Vermeer
+
+Een van de bekendste stadsgezichten ter wereld is het Gezicht op Delft, geschilderd door Johannes Vermeer rond 1660–1661. In ons huis hebben we ook een kamer vernoemd naar dit schilderij. Er is slechts één plek in Delft van waaruit Vermeer dit schilderij gemaakt kan hebben — en die plek is ons kadastrale perceel.
+
+![Uitvergroting van Gezicht op Delft — ons pand is zichtbaar](archief/img49.jpg)
+![Gezicht op Delft, Johannes Vermeer, ca. 1660–1661](archief/img50.jpg)
+::row
+![Bepaling van het standpunt van Vermeer — in het rood ons kadastrale perceel](archief/img51.jpg)
+![Uitzicht vanaf het dakterras van het voorhuis op de plek waar Vermeer stond](archief/img52.jpg)
+::endrow
+
+## Bronnen
+
+1891 — Oprichtingsjaar studentenhuis · 1896 — Eerste inschrijving als corpshuis
+
+Bronnen: Archief Delft · Stadsarchief Delft · Delpher (Delftsche Courant) · Historisch GIS · Ons Voorgeslacht · Wikipedia · Weve, W. — Vermeer en de Delftse topografie`;
+
 
 function parseHistoryMarkdown(text) {
-  // Simpele markdown-achtige parser
   const lines = text.split('\n');
   let html = '';
   let inTimeline = false;
-  let inParagraph = false;
   let paragraphBuf = [];
+  let tableLines = [];
+  let inTable = false;
 
   function flushParagraph() {
     if (paragraphBuf.length) {
       html += `<p>${paragraphBuf.join(' ')}</p>`;
       paragraphBuf = [];
     }
-    inParagraph = false;
+  }
+
+  function flushTable() {
+    if (!tableLines.length) return;
+    html += '<table class="history-table">';
+    tableLines.forEach((row, i) => {
+      const cells = row.split('|').map(c => c.trim()).filter((_, ci, arr) => ci > 0 && ci < arr.length - 1);
+      if (i === 0) {
+        html += '<thead><tr>' + cells.map(c => `<th>${escapeHtml(c)}</th>`).join('') + '</tr></thead><tbody>';
+      } else if (i === 1 && cells.every(c => /^-+$/.test(c))) {
+        // separator row — skip
+      } else {
+        html += '<tr>' + cells.map(c => `<td>${escapeHtml(c)}</td>`).join('') + '</tr>';
+      }
+    });
+    html += '</tbody></table>';
+    tableLines = [];
+    inTable = false;
   }
 
   lines.forEach(line => {
     const trimmed = line.trim();
-    if (!trimmed) {
+
+    // Afbeeldingenrij: ::row gevolgd door afbeeldingen
+    if (trimmed.startsWith('::row')) { html += '<div class="history-figure-row">'; return; }
+    if (trimmed === '::endrow') { html += '</div>'; return; }
+
+    // Afbeelding: ![caption](src)
+    const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (imgMatch) {
       flushParagraph();
+      if (inTimeline) { html += '</div>'; inTimeline = false; }
+      if (inTable) flushTable();
+      const [, caption, src] = imgMatch;
+      html += `<figure class="history-figure"><img src="${escapeHtml(src)}" alt="${escapeHtml(caption)}" loading="lazy">`;
+      if (caption) html += `<figcaption>${escapeHtml(caption)}</figcaption>`;
+      html += '</figure>';
       return;
     }
+
+    // Tabel
+    if (trimmed.startsWith('|')) {
+      flushParagraph();
+      if (inTimeline) { html += '</div>'; inTimeline = false; }
+      inTable = true;
+      tableLines.push(trimmed);
+      return;
+    } else if (inTable) {
+      flushTable();
+    }
+
+    if (!trimmed) { flushParagraph(); return; }
+
     if (trimmed.startsWith('# ')) {
       flushParagraph();
+      if (inTimeline) { html += '</div>'; inTimeline = false; }
       html += `<h2>${escapeHtml(trimmed.slice(2))}</h2>`;
     } else if (trimmed.startsWith('## ')) {
       flushParagraph();
+      if (inTimeline) { html += '</div>'; inTimeline = false; }
       html += `<h3>${escapeHtml(trimmed.slice(3))}</h3>`;
     } else if (trimmed.startsWith('> ')) {
       flushParagraph();
       html += `<div class="pull-quote">${escapeHtml(trimmed.slice(2))}</div>`;
     } else if (trimmed.match(/^\d{4}\s*[-–:]\s*/)) {
-      // Timeline item: "1891 - tekst" of "1891: tekst"
-      if (!inTimeline) {
-        flushParagraph();
-        html += '<div class="timeline">';
-        inTimeline = true;
-      }
+      if (!inTimeline) { flushParagraph(); html += '<div class="timeline">'; inTimeline = true; }
       const m = trimmed.match(/^(\d{4})\s*[-–:]\s*(.+)$/);
       html += `<div class="timeline-item"><div class="timeline-year">${m[1]}</div><div class="timeline-text">${escapeHtml(m[2])}</div></div>`;
     } else {
       if (inTimeline) { html += '</div>'; inTimeline = false; }
-      // Voeg toe aan paragraaf — eerste regel is lead als het begin van het document is
       if (paragraphBuf.length === 0 && html.match(/<h2>[^<]*<\/h2>$/) && !html.includes('<p>')) {
         html += `<p class="lead">${escapeHtml(trimmed)}</p>`;
       } else {
@@ -3244,6 +3493,7 @@ function parseHistoryMarkdown(text) {
   });
   flushParagraph();
   if (inTimeline) html += '</div>';
+  if (inTable) flushTable();
   return html;
 }
 
