@@ -4446,11 +4446,16 @@ async function uploadFotos(files, albumId) {
 
 // Delete album
 async function setCover(albumId, url, btn) {
+  btn.textContent = '…';
   const { error } = await db.from('albums').update({ cover_url: url }).eq('id', albumId);
-  if (error) { alert('Instellen mislukt: ' + error.message); return; }
+  if (error) {
+    btn.textContent = '★';
+    alert('Opslaan mislukt: ' + error.message);
+    return;
+  }
   const album = albumsList.find(a => a.id === albumId);
   if (album) album.cover_url = url;
-  document.querySelectorAll('.foto-cover-btn').forEach(b => b.classList.remove('is-cover'));
+  document.querySelectorAll('.foto-cover-btn').forEach(b => { b.classList.remove('is-cover'); b.textContent = '★'; });
   btn.classList.add('is-cover');
 }
 
