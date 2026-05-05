@@ -3283,7 +3283,7 @@ function renderEvents() {
       html += `<p style="color:var(--gray);font-style:italic;font-size:0.85rem;">Nog niemand opgegeven.</p>`;
     } else {
       html += `<table class="deelnemers-table">`;
-      html += `<thead><tr><th>Naam</th><th>Jaar</th><th class="center">Status</th><th class="center">Betaald</th></tr></thead><tbody>`;
+      html += `<thead><tr><th>Naam</th><th>Jaar</th><th class="center">Status</th>${isAdmin() ? '<th class="center">Betaald</th>' : ''}</tr></thead><tbody>`;
       aanwezigen.forEach(p => {
         const pid = getPersonId(p);
         const status = attendanceMap[pid][ev.id];
@@ -3295,7 +3295,7 @@ function renderEvents() {
         html += `<td>${escapeHtml(naam)}</td>`;
         html += `<td>${escapeHtml(String(p['Aankomstjaar'] || ''))}</td>`;
         html += `<td class="center"><span class="deelnemers-badge ${badgeClass}">${badgeLabel}</span></td>`;
-        html += `<td class="center"><input type="checkbox" class="betaald-check" data-person-id="${escapeHtml(pid)}" data-event-id="${escapeHtml(ev.id)}" ${betaald ? 'checked' : ''}></td>`;
+        if (isAdmin()) html += `<td class="center"><input type="checkbox" class="betaald-check" data-person-id="${escapeHtml(pid)}" data-event-id="${escapeHtml(ev.id)}" ${betaald ? 'checked' : ''}></td>`;
         html += `</tr>`;
       });
       html += `</tbody></table>`;
