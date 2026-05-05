@@ -13,12 +13,13 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Verplichte velden ontbreken' });
   }
 
-  // Fallback hardcoded key als env var niet werkt — kan via Vercel env var overschreven worden
-  const RESEND_KEY = process.env.RESEND_API_KEY || 're_ZmhwMbFi_DMVgnUjuyY8FNVbPCWo1MkAp';
+  if (!process.env.RESEND_API_KEY) {
+    return res.status(200).json({ ok: true, warn: 'Geen RESEND_API_KEY' });
+  }
 
   const to = Array.isArray(adminEmails) && adminEmails.length > 0 ? adminEmails : ['omegaksiod35@gmail.com'];
 
-  const resend = new Resend(RESEND_KEY);
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     await resend.emails.send({
       from: 'OD35 Ledenlijst <onboarding@resend.dev>',
