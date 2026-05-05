@@ -3172,23 +3172,28 @@ list.addEventListener('submit', async e => {
   cancelBtn.disabled = true;
 
   try {
-    const { error } = await db.from('wijzigingsverzoeken').insert({
-      persoon: payload.persoon,
-      aanvrager_naam: payload.aanvrager_naam,
-      aanvrager_email: payload.aanvrager_email,
-      veld: payload.veld,
-      wijziging: payload.wijziging,
-      toelichting: payload.toelichting || null,
+    const res = await fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload),
     });
-    if (error) throw error;
-    formContainer.innerHTML = `
-      <div class="form-success">
-        <div class="icon">\u2713</div>
-        <h4>Aanvraag verstuurd</h4>
-        <p>Bedankt — we nemen de wijziging zo spoedig mogelijk in behandeling.</p>
-      </div>`;
+    if (res.ok) {
+      formContainer.innerHTML = `
+        <div class="form-success">
+          <div class="icon">\u2713</div>
+          <h4>Aanvraag verstuurd</h4>
+          <p>Bedankt — we nemen de wijziging zo spoedig mogelijk in behandeling.</p>
+        </div>`;
+    } else {
+      const data = await res.json().catch(() => ({}));
+      const msg = (data.errors && data.errors.map(x => x.message).join(', ')) || data.error || 'Er ging iets mis. Probeer later opnieuw.';
+      status.textContent = msg;
+      status.className = 'form-status error';
+      submitBtn.disabled = false;
+      cancelBtn.disabled = false;
+    }
   } catch (err) {
-    status.textContent = err.message || 'Er ging iets mis. Probeer later opnieuw.';
+    status.textContent = 'Verbinding mislukt. Controleer je internet en probeer opnieuw.';
     status.className = 'form-status error';
     submitBtn.disabled = false;
     cancelBtn.disabled = false;
