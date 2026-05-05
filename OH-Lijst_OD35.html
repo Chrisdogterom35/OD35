@@ -1769,10 +1769,17 @@
   color: var(--gray);
   text-transform: uppercase;
 }
-.album-delete-btn {
+.album-admin-btns {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
+  display: flex;
+  gap: 0.3rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.album-card:hover .album-admin-btns { opacity: 1; }
+.album-delete-btn, .album-rename-btn {
   background: rgba(0,0,0,0.55);
   color: #fff;
   border: none;
@@ -1784,10 +1791,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.15s;
 }
-.album-card:hover .album-delete-btn { opacity: 1; }
+.album-rename-btn { font-size: 0.85rem; }
+.album-delete-btn:hover { background: rgba(192,57,43,0.85); }
+.album-rename-btn:hover { background: rgba(58,124,193,0.85); }
 
 /* Photo grid */
 .foto-grid {
@@ -4199,13 +4206,15 @@ function renderAlbumGrid() {
       const thumbHtml = thumb
         ? `<img class="album-thumb" src="${escapeHtml(thumb)}" alt="" loading="lazy">`
         : `<div class="album-thumb-placeholder">📷</div>`;
-      const deleteBtn = isAdmin()
-        ? `<button class="album-delete-btn" data-id="${escapeHtml(album.id)}" title="Album verwijderen" onclick="deleteAlbum(event,'${escapeHtml(album.id)}')">✕</button>`
-        : '';
+      const adminBtns = isAdmin() ? `
+        <div class="album-admin-btns" onclick="event.stopPropagation()">
+          <button class="album-rename-btn" title="Album hernoemen" onclick="renameAlbum(event,'${escapeHtml(album.id)}','${escapeHtml(album.naam).replace(/'/g,"\\'")}')">✎</button>
+          <button class="album-delete-btn" title="Album verwijderen" onclick="deleteAlbum(event,'${escapeHtml(album.id)}')">✕</button>
+        </div>` : '';
       html += `
         <div class="album-card" data-id="${escapeHtml(album.id)}" onclick="openAlbum('${escapeHtml(album.id)}')">
           ${thumbHtml}
-          ${deleteBtn}
+          ${adminBtns}
           <div class="album-meta">
             <div class="album-name">${escapeHtml(album.naam)}</div>
             ${album.beschrijving ? `<div class="album-beschrijving">${escapeHtml(album.beschrijving)}</div>` : ''}
@@ -4305,6 +4314,8 @@ function backToAlbums() {
 }
 
 // Lightbox
+let _lightboxKeyHandler = null;
+
 function openLightbox(idx) {
   lightboxIndex = idx;
   renderLightbox();
@@ -4313,6 +4324,7 @@ function openLightbox(idx) {
 function renderLightbox() {
   const existing = document.getElementById('foto-lightbox-overlay');
   if (existing) existing.remove();
+  if (_lightboxKeyHandler) { document.removeEventListener('keydown', _lightboxKeyHandler); _lightboxKeyHandler = null; }
 
   if (fotosList.length === 0) return;
   const foto = fotosList[lightboxIndex];
@@ -4331,26 +4343,25 @@ function renderLightbox() {
   overlay.addEventListener('click', e => { if (e.target === overlay) closeLightbox(); });
   document.body.appendChild(overlay);
 
-  // Keyboard nav
-  overlay._keyHandler = e => {
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft' && lightboxIndex > 0) lightboxNav(-1);
-    if (e.key === 'ArrowRight' && lightboxIndex < fotosList.length - 1) lightboxNav(1);
+  _lightboxKeyHandler = e => {
+    if (e.key === 'Escape') { closeLightbox(); return; }
+    if (e.key === 'ArrowLeft')  lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
   };
-  document.addEventListener('keydown', overlay._keyHandler);
+  document.addEventListener('keydown', _lightboxKeyHandler);
 }
 
 function lightboxNav(dir) {
-  lightboxIndex = Math.max(0, Math.min(fotosList.length - 1, lightboxIndex + dir));
+  const next = lightboxIndex + dir;
+  if (next < 0 || next >= fotosList.length) return;
+  lightboxIndex = next;
   renderLightbox();
 }
 
 function closeLightbox() {
   const overlay = document.getElementById('foto-lightbox-overlay');
-  if (overlay) {
-    document.removeEventListener('keydown', overlay._keyHandler);
-    overlay.remove();
-  }
+  if (overlay) overlay.remove();
+  if (_lightboxKeyHandler) { document.removeEventListener('keydown', _lightboxKeyHandler); _lightboxKeyHandler = null; }
 }
 
 // Upload
@@ -4420,6 +4431,16 @@ async function uploadFotos(files, albumId) {
 }
 
 // Delete album
+async function renameAlbum(e, albumId, huidigNaam) {
+  e.stopPropagation();
+  const nieuwNaam = prompt('Nieuwe naam voor het album:', huidigNaam);
+  if (!nieuwNaam || nieuwNaam.trim() === huidigNaam) return;
+  const { error } = await db.from('albums').update({ naam: nieuwNaam.trim() }).eq('id', albumId);
+  if (error) { alert('Hernoemen mislukt: ' + error.message); return; }
+  await loadAlbums();
+  renderAlbumGrid();
+}
+
 async function deleteAlbum(e, albumId) {
   e.stopPropagation();
   const album = albumsList.find(a => a.id === albumId);
