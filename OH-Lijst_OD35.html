@@ -29,6 +29,57 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* ==================== WACHTWOORDSCHERM ==================== */
+  #pw-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    padding: 2rem;
+  }
+  #pw-screen .pw-logo {
+    max-height: 80px; margin-bottom: 2rem; opacity: 0.9;
+  }
+  #pw-screen h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 600; color: var(--ink);
+    margin-bottom: 0.3rem; text-align: center;
+  }
+  #pw-screen p {
+    font-family: 'Lora', serif; font-style: italic;
+    color: var(--gray); font-size: 1rem;
+    margin-bottom: 2rem; text-align: center;
+  }
+  #pw-screen .pw-form {
+    display: flex; gap: 0; max-width: 360px; width: 100%;
+  }
+  #pw-screen input[type="password"] {
+    flex: 1; padding: 0.8rem 1rem;
+    border: 1px solid var(--line); border-right: none;
+    background: var(--paper-warm);
+    font-family: 'Lora', serif; font-size: 1rem;
+    color: var(--ink); outline: none;
+  }
+  #pw-screen input[type="password"]:focus { border-color: var(--burgundy); }
+  #pw-screen button {
+    padding: 0.8rem 1.25rem;
+    background: var(--burgundy); color: white; border: none;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  #pw-screen button:hover { background: var(--burgundy-deep); }
+  #pw-screen .pw-error {
+    margin-top: 0.75rem; color: #c0392b;
+    font-size: 0.85rem; font-family: 'Lora', serif;
+    font-style: italic; display: none;
+  }
+  #pw-screen .pw-ornament {
+    width: 3rem; height: 1px; background: var(--gold);
+    margin: 0 auto 2rem;
+  }
+
   html, body {
     background: var(--paper);
     color: var(--ink);
@@ -1615,6 +1666,20 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+<div id="pw-screen">
+  <img src="logo_od35.png" class="pw-logo" alt="OD35">
+  <h1>Oude Delft 35</h1>
+  <p>Oud-huisgenoten archief</p>
+  <div class="pw-ornament"></div>
+  <div class="pw-form">
+    <input type="password" id="pw-input" placeholder="Wachtwoord" autocomplete="current-password">
+    <button id="pw-btn">Inloggen</button>
+  </div>
+  <div class="pw-error" id="pw-error">Onjuist wachtwoord</div>
+</div>
+
+<div id="main-content" style="display:none">
 <div class="container">
 
 
@@ -3854,6 +3919,35 @@ init();
     </form>
   </div>
 </div>
+
+</div> <!-- #main-content -->
+
+<script>
+(function() {
+  const PW = 'OmegaKsi35';
+  const KEY = 'od35_toegang';
+  const screen = document.getElementById('pw-screen');
+  const main   = document.getElementById('main-content');
+  const input  = document.getElementById('pw-input');
+  const btn    = document.getElementById('pw-btn');
+  const error  = document.getElementById('pw-error');
+
+  function unlock() {
+    sessionStorage.setItem(KEY, '1');
+    screen.style.display = 'none';
+    main.style.display = '';
+  }
+
+  if (sessionStorage.getItem(KEY) === '1') { unlock(); return; }
+
+  btn.addEventListener('click', () => {
+    if (input.value === PW) { unlock(); }
+    else { error.style.display = 'block'; input.value = ''; input.focus(); }
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+  input.focus();
+})();
+</script>
 
 </body>
 </html>
