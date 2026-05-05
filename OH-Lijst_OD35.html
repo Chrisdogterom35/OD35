@@ -1831,10 +1831,17 @@
   border-top: none;
   border-radius: 0 0 2px 2px;
 }
-.foto-delete-btn {
+.foto-admin-btns {
   position: absolute;
   top: 0.4rem;
   right: 0.4rem;
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.foto-item:hover .foto-admin-btns { opacity: 1; }
+.foto-delete-btn, .foto-cover-btn {
   background: rgba(0,0,0,0.55);
   color: #fff;
   border: none;
@@ -1846,10 +1853,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.15s;
 }
-.foto-item:hover .foto-delete-btn { opacity: 1; }
+.foto-delete-btn:hover { background: rgba(192,57,43,0.85); }
+.foto-cover-btn:hover { background: rgba(58,124,193,0.85); }
+.foto-cover-btn.is-cover { background: var(--burgundy); opacity: 1 !important; }
 
 /* Lightbox */
 .foto-lightbox {
@@ -4190,15 +4197,17 @@ function renderAlbumGrid() {
     return;
   }
 
-  // Fetch first photo per album for thumbnails
-  const thumbPromises = albumsList.map(album =>
+  // Use cover_url if set, otherwise fetch first photo per album
+  const albumsNeedingThumb = albumsList.filter(a => !a.cover_url);
+  const thumbPromises = albumsNeedingThumb.map(album =>
     db.from('fotos').select('url').eq('album_id', album.id).order('volgorde').order('created_at').limit(1)
       .then(({ data }) => ({ id: album.id, url: data && data[0] ? data[0].url : null }))
   );
 
   Promise.all(thumbPromises).then(thumbs => {
     const thumbMap = {};
-    thumbs.forEach(t => { thumbMap[t.id] = t.url; });
+    albumsList.forEach(a => { if (a.cover_url) thumbMap[a.id] = a.cover_url; });
+    thumbs.forEach(t => { if (!thumbMap[t.id]) thumbMap[t.id] = t.url; });
 
     let html = '<div class="album-grid">';
     albumsList.forEach(album => {
@@ -4267,15 +4276,20 @@ function renderAlbumFotos(albumId) {
     fotosHtml = '<div class="empty-state"><div class="icon">🖼</div><p>Nog geen foto\'s in dit album.</p></div>';
   } else {
     fotosHtml = '<div class="foto-grid">';
+    const currentAlbum = albumsList.find(a => a.id === albumId);
+    const currentCover = currentAlbum ? currentAlbum.cover_url : null;
     fotosList.forEach((foto, idx) => {
-      const deleteBtn = isAdmin()
-        ? `<button class="foto-delete-btn" title="Foto verwijderen" onclick="deleteFoto(event,'${escapeHtml(foto.id)}','${escapeHtml(foto.url)}')">✕</button>`
-        : '';
+      const isCover = foto.url === currentCover;
+      const adminBtns = isAdmin() ? `
+        <div class="foto-admin-btns" onclick="event.stopPropagation()">
+          <button class="foto-cover-btn ${isCover ? 'is-cover' : ''}" title="${isCover ? 'Huidige albumcover' : 'Instellen als albumcover'}" onclick="setCover('${escapeHtml(albumId)}','${escapeHtml(foto.url)}',this)">★</button>
+          <button class="foto-delete-btn" title="Foto verwijderen" onclick="deleteFoto(event,'${escapeHtml(foto.id)}','${escapeHtml(foto.url)}')">✕</button>
+        </div>` : '';
       fotosHtml += `
         <div class="foto-item" onclick="openLightbox(${idx})">
           <img src="${escapeHtml(foto.url)}" alt="${escapeHtml(foto.bijschrift || '')}" loading="lazy">
           ${foto.bijschrift ? `<div class="foto-caption">${escapeHtml(foto.bijschrift)}</div>` : ''}
-          ${deleteBtn}
+          ${adminBtns}
         </div>`;
     });
     fotosHtml += '</div>';
@@ -4431,6 +4445,15 @@ async function uploadFotos(files, albumId) {
 }
 
 // Delete album
+async function setCover(albumId, url, btn) {
+  const { error } = await db.from('albums').update({ cover_url: url }).eq('id', albumId);
+  if (error) { alert('Instellen mislukt: ' + error.message); return; }
+  const album = albumsList.find(a => a.id === albumId);
+  if (album) album.cover_url = url;
+  document.querySelectorAll('.foto-cover-btn').forEach(b => b.classList.remove('is-cover'));
+  btn.classList.add('is-cover');
+}
+
 async function renameAlbum(e, albumId, huidigNaam) {
   e.stopPropagation();
   const nieuwNaam = prompt('Nieuwe naam voor het album:', huidigNaam);
