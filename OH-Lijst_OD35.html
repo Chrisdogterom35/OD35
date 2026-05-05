@@ -3186,7 +3186,7 @@ list.addEventListener('submit', async e => {
         </div>`;
     } else {
       const data = await res.json().catch(() => ({}));
-      const msg = (data.errors && data.errors.map(x => x.message).join(', ')) || 'Er ging iets mis. Probeer later opnieuw.';
+      const msg = (data.errors && data.errors.map(x => x.message).join(', ')) || data.error || 'Er ging iets mis. Probeer later opnieuw.';
       status.textContent = msg;
       status.className = 'form-status error';
       submitBtn.disabled = false;
