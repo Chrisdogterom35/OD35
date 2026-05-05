@@ -3061,11 +3061,11 @@ document.getElementById('contacts-grid').addEventListener('click', e => {
     display.style.display = '';
   } else if (e.target.dataset.action === 'save-contact') {
     contactsMap[role] = {
+      ...contactsMap[role],
       naam: form.querySelector('[name="naam"]').value.trim(),
       email: form.querySelector('[name="email"]').value.trim(),
       telefoon: form.querySelector('[name="telefoon"]').value.trim(),
       notitie: form.querySelector('[name="notitie"]').value.trim(),
-      beschrijving: form.querySelector('[name="beschrijving"]').value.trim()
     };
     db.from('contactpersonen').upsert({
       rol: role,
