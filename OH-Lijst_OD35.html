@@ -2051,9 +2051,9 @@ let eventsList    = [];
 let attendanceMap = {};
 let paidMap       = {};
 let contactsMap   = {
-  huiszaken: { naam: '', email: '', telefoon: '', notitie: '' },
-  klusjes:   { naam: '', email: '', telefoon: '', notitie: '' },
-  bodega:    { naam: '', email: '', telefoon: '', notitie: '' }
+  huiszaken: { naam: '', email: '', telefoon: '', notitie: '', beschrijving: '' },
+  klusjes:   { naam: '', email: '', telefoon: '', notitie: '', beschrijving: '' },
+  bodega:    { naam: '', email: '', telefoon: '', notitie: '', beschrijving: '' }
 };
 
 // ── Supabase: laad functies voor live data ────────────────────────────────────
@@ -2088,7 +2088,7 @@ async function loadContactenFromDB() {
     bodega:    { naam: '', email: '', telefoon: '', notitie: '' }
   };
   (data || []).forEach(r => {
-    map[r.rol] = { naam: r.naam || '', email: r.email || '', telefoon: r.telefoon || '', notitie: r.notitie || '' };
+    map[r.rol] = { naam: r.naam || '', email: r.email || '', telefoon: r.telefoon || '', notitie: r.notitie || '', beschrijving: r.beschrijving || '' };
   });
   return map;
 }
@@ -2933,7 +2933,7 @@ function renderContacts() {
     html += `<div class="contact-card" data-role="${role.key}">`;
     html += `<div class="role-icon">${role.icon}</div>`;
     html += `<h3>${role.title}</h3>`;
-    html += `<p class="role-desc">${role.desc}</p>`;
+    html += `<p class="role-desc">${escapeHtml(c.beschrijving || role.desc)}</p>`;
     html += `<div class="contact-display">`;
     html += `<div class="contact-name ${hasName ? '' : 'empty'}">${hasName ? escapeHtml(c.naam) : 'Nog niet ingevuld'}</div>`;
     if (c.email) html += `<div class="contact-detail">✉ <a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a></div>`;
@@ -2962,6 +2962,8 @@ function renderContacts() {
     html += `<input type="email" name="email" placeholder="E-mail" value="${escapeHtml(c.email || '')}">`;
     html += `<input type="tel" name="telefoon" placeholder="Telefoonnummer" value="${escapeHtml(c.telefoon || '')}">`;
     html += `<input type="text" name="notitie" placeholder="Korte notitie (optioneel)" value="${escapeHtml(c.notitie || '')}">`;
+    html += `<label class="picker-label" style="margin-top:0.5rem;">Beschrijving van de rol</label>`;
+    html += `<textarea name="beschrijving" rows="3" placeholder="${escapeHtml(role.desc)}" style="width:100%;padding:0.55rem 0.7rem;border:1px solid var(--line);background:var(--paper);font-family:Lora,serif;font-size:0.9rem;resize:vertical;">${escapeHtml(c.beschrijving || '')}</textarea>`;
     html += `<div class="form-buttons">`;
     html += `<button class="save-btn" data-action="save-contact" data-role="${role.key}">Opslaan</button>`;
     html += `<button class="cancel-btn" data-action="cancel-contact" data-role="${role.key}">Annuleren</button>`;
@@ -2997,14 +2999,16 @@ document.getElementById('contacts-grid').addEventListener('click', e => {
       naam: form.querySelector('[name="naam"]').value.trim(),
       email: form.querySelector('[name="email"]').value.trim(),
       telefoon: form.querySelector('[name="telefoon"]').value.trim(),
-      notitie: form.querySelector('[name="notitie"]').value.trim()
+      notitie: form.querySelector('[name="notitie"]').value.trim(),
+      beschrijving: form.querySelector('[name="beschrijving"]').value.trim()
     };
     db.from('contactpersonen').upsert({
       rol: role,
       naam: contactsMap[role].naam,
       email: contactsMap[role].email,
       telefoon: contactsMap[role].telefoon,
-      notitie: contactsMap[role].notitie
+      notitie: contactsMap[role].notitie,
+      beschrijving: contactsMap[role].beschrijving || null
     }, { onConflict: 'rol' }).then();
     renderContacts();
   }
