@@ -2833,13 +2833,21 @@ const STAR_SVG = '<svg class="oudste-star" viewBox="0 0 24 24" aria-label="Huis 
 // Stable person ID — based on Achternaam + Voorletters + Aankomstjaar (independent of array index)
 function getPersonId(p) {
   // Gebruik de Supabase UUID — uniek per persoon, ook bij dezelfde naam+jaar.
-  // Fallback voor data die nog geen _id heeft (zou niet meer voor mogen komen).
-  return p && p._id ? String(p._id) : [
+  return p && p._id ? String(p._id) : legacyPersonId(p);
+}
+function legacyPersonId(p) {
+  // Oud formaat — voor backward compat met huis_oudste/aanwezigheid records
+  // die nog niet gemigreerd zijn naar UUID.
+  return [
     (p['Achternaam'] || '').toLowerCase().replace(/\s+/g, '_'),
     (p['Voorletters'] || '').toLowerCase().replace(/\./g, '').replace(/\s+/g, ''),
     (p['Tussenvoegsel'] || '').toLowerCase().replace(/\s+/g, ''),
     p['Aankomstjaar'] || 'x'
   ].join('|');
+}
+function matchesPersonId(p, storedId) {
+  if (!storedId || !p) return false;
+  return storedId === getPersonId(p) || storedId === legacyPersonId(p);
 }
 
 let huisOudsteMap = {};
@@ -2908,14 +2916,14 @@ function getNextEvent() {
 function isHuisOudste(p) {
   const jaar = p['Aankomstjaar'];
   if (!jaar) return false;
-  return huisOudsteMap[jaar] === getPersonId(p);
+  return matchesPersonId(p, huisOudsteMap[jaar]);
 }
 
 function toggleHuisOudste(p) {
   const jaar = p['Aankomstjaar'];
   if (!jaar) return;
   const id = getPersonId(p);
-  if (huisOudsteMap[jaar] === id) {
+  if (matchesPersonId(p, huisOudsteMap[jaar])) {
     delete huisOudsteMap[jaar];
     db.from('huis_oudste').delete().eq('aankomstjaar', jaar).then();
   } else {
@@ -2925,8 +2933,11 @@ function toggleHuisOudste(p) {
 }
 
 function getAttendance(p, eventId) {
-  const id = getPersonId(p);
-  return (attendanceMap[id] && attendanceMap[id][eventId]) || null;
+  const uuid = getPersonId(p);
+  const legacy = legacyPersonId(p);
+  return (attendanceMap[uuid] && attendanceMap[uuid][eventId])
+      || (attendanceMap[legacy] && attendanceMap[legacy][eventId])
+      || null;
 }
 
 function setAttendance(p, eventId, status) {
@@ -3194,7 +3205,7 @@ function renderDetails(p) {
     // Toon ander persoon als die al Huis Oudste is
     const currentOudsteId = huisOudsteMap[p['Aankomstjaar']];
     if (currentOudsteId && currentOudsteId !== personId) {
-      const other = PEOPLE.find(x => getPersonId(x) === currentOudsteId);
+      const other = PEOPLE.find(x => matchesPersonId(x, currentOudsteId));
       if (other) {
         html += `<span style="margin-left:0.75rem; font-size:0.85rem; color:var(--gray); font-style:italic;">huidige Huis Oudste: ${escapeHtml(plainName(other))}</span>`;
       }
@@ -3334,7 +3345,7 @@ list.addEventListener('click', e => {
   if (e.target.matches('[data-action="toggle-oudste"]')) {
     e.stopPropagation();
     const id = e.target.dataset.personId;
-    const p = PEOPLE.find(x => getPersonId(x) === id);
+    const p = PEOPLE.find(x => matchesPersonId(x, id));
     if (p) {
       toggleHuisOudste(p);
       render();
@@ -3347,7 +3358,7 @@ list.addEventListener('click', e => {
     const id = e.target.dataset.personId;
     const eventId = e.target.dataset.eventId;
     const status = e.target.dataset.status;
-    const p = PEOPLE.find(x => getPersonId(x) === id);
+    const p = PEOPLE.find(x => matchesPersonId(x, id));
     if (p) {
       setAttendance(p, eventId, status);
       render();
@@ -4655,7 +4666,7 @@ document.getElementById('export-excel').addEventListener('click', () => {
   // Sheet 2: Huis Oudsten per jaar
   const oudstenRows = Object.keys(huisOudsteMap).sort((a,b) => Number(b) - Number(a)).map(jaar => {
     const id = huisOudsteMap[jaar];
-    const p = PEOPLE.find(x => getPersonId(x) === id);
+    const p = PEOPLE.find(x => matchesPersonId(x, id));
     return {
       'Aankomstjaar': jaar,
       'Huis Oudste': p ? plainName(p) : '(onbekend)',
