@@ -1588,6 +1588,94 @@
   .admin-fab:hover { background: var(--burgundy-deep); }
   .admin-fab.logged-in { background: var(--burgundy); }
 
+  /* Mail modal */
+  .mail-modal-box { max-width: 720px; }
+  .mail-section { margin-bottom: 1.2rem; }
+  .mail-section-label {
+    font-family: var(--font-display); font-size: 0.78rem;
+    color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .mail-mode-tabs {
+    display: flex; gap: 0; border: 1px solid var(--line);
+    margin-bottom: 0.8rem; background: var(--paper-warm);
+  }
+  .mail-mode-tab {
+    flex: 1; padding: 0.55rem 0.5rem;
+    background: transparent; border: none; cursor: pointer;
+    font-family: var(--font-body); font-size: 0.85rem;
+    color: var(--gray); transition: all 0.15s;
+  }
+  .mail-mode-tab + .mail-mode-tab { border-left: 1px solid var(--line); }
+  .mail-mode-tab.active {
+    background: var(--burgundy); color: var(--paper);
+    font-weight: 500;
+  }
+  .mail-recipient-area {
+    border: 1px solid var(--line); padding: 0.8rem;
+    background: var(--paper); max-height: 240px; overflow-y: auto;
+    font-size: 0.88rem;
+  }
+  .mail-recipient-area .empty { color: var(--gray); font-style: italic; }
+  .mail-year-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.4rem;
+  }
+  .mail-year-chip {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.35rem 0.55rem; cursor: pointer; user-select: none;
+    border: 1px solid var(--line); background: var(--paper-warm);
+    font-size: 0.85rem; transition: all 0.15s;
+  }
+  .mail-year-chip:hover { background: var(--highlight); }
+  .mail-year-chip.checked { background: var(--burgundy); color: var(--paper); border-color: var(--burgundy); }
+  .mail-year-chip input { display: none; }
+  .mail-year-chip .count { font-size: 0.75rem; opacity: 0.75; }
+  .mail-person-search { width: 100%; padding: 0.5rem 0.65rem;
+    border: 1px solid var(--line); margin-bottom: 0.4rem;
+    font-family: var(--font-body); font-size: 0.9rem; background: var(--paper);
+  }
+  .mail-person-row {
+    display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.2rem;
+    border-bottom: 1px solid var(--line-soft); cursor: pointer;
+  }
+  .mail-person-row:hover { background: var(--paper-warm); }
+  .mail-person-row input { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+  .mail-person-name { font-weight: 500; }
+  .mail-person-meta { font-size: 0.78rem; color: var(--gray); margin-left: auto; }
+  .mail-toggle-all {
+    background: transparent; border: 1px dashed var(--line);
+    padding: 0.4rem 0.7rem; cursor: pointer; font-size: 0.8rem;
+    color: var(--burgundy); margin-bottom: 0.4rem; font-family: var(--font-body);
+  }
+  .mail-toggle-all:hover { background: var(--highlight); }
+  .mail-summary {
+    background: var(--highlight); border-left: 3px solid var(--burgundy);
+    padding: 0.6rem 0.8rem; margin-top: 0.5rem; font-size: 0.88rem;
+  }
+  .mail-summary strong { color: var(--burgundy-deep); }
+  .mail-form-field { margin-bottom: 0.8rem; }
+  .mail-form-field label { display: block; font-size: 0.78rem; color: var(--gray);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem;
+  }
+  .mail-form-field input, .mail-form-field textarea {
+    width: 100%; padding: 0.55rem 0.65rem; border: 1px solid var(--line);
+    background: var(--paper); font-family: var(--font-body); font-size: 0.95rem;
+    color: var(--ink);
+  }
+  .mail-form-field textarea { font-family: var(--font-body); resize: vertical; min-height: 140px; }
+  .mail-send-btn {
+    width: 100%; padding: 0.85rem;
+    background: var(--burgundy); color: var(--paper); border: none;
+    cursor: pointer; font-family: var(--font-display); font-size: 1rem;
+    letter-spacing: 0.04em; transition: background 0.2s;
+  }
+  .mail-send-btn:hover { background: var(--burgundy-deep); }
+  .mail-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .mail-status { margin-top: 0.7rem; font-size: 0.88rem; }
+  .mail-status.error { color: #c14040; }
+  .mail-status.success { color: #4a8c4a; }
+
   /* Theme picker */
   .theme-fab {
     position: fixed; bottom: 1.5rem; right: 5rem;
@@ -2253,6 +2341,7 @@
   </select>
   <button id="reset" class="reset-btn">Reset</button>
   <button id="export-excel" class="export-btn" title="Exporteer alle data naar Excel">Excel export</button>
+  <button id="mail-btn" class="export-btn admin-only" title="Mail versturen naar leden" style="display:none">✉ Mail versturen</button>
 </div>
 
 <div class="alphabet" id="alphabet"></div>
@@ -4263,6 +4352,244 @@ document.getElementById('history-reset').addEventListener('click', () => {
   }
 });
 
+// ==================== MAIL VERSTUREN ====================
+let mailMode = 'all';
+const mailSelectedYears = new Set();
+const mailSelectedIds = new Set();
+
+function getPersonsWithEmail() {
+  return PEOPLE.filter(p => {
+    for (let i = 1; i <= 5; i++) if (p[`E-mail ${i}`]) return true;
+    return false;
+  });
+}
+
+function emailsForPerson(p) {
+  const out = [];
+  for (let i = 1; i <= 5; i++) {
+    const e = (p[`E-mail ${i}`] || '').trim();
+    if (e && /@/.test(e)) out.push(e.toLowerCase());
+  }
+  return out;
+}
+
+function computeMailRecipients() {
+  let pool;
+  if (mailMode === 'all') {
+    pool = getPersonsWithEmail();
+  } else if (mailMode === 'years') {
+    pool = getPersonsWithEmail().filter(p => mailSelectedYears.has(String(p['Aankomstjaar'])));
+  } else {
+    pool = getPersonsWithEmail().filter(p => mailSelectedIds.has(String(p._id)));
+  }
+  const set = new Set();
+  pool.forEach(p => emailsForPerson(p).forEach(e => set.add(e)));
+  return [...set];
+}
+
+function refreshMailSummary() {
+  const emails = computeMailRecipients();
+  const sumEl = document.getElementById('mail-summary');
+  const btn = document.getElementById('mail-send-btn');
+  const personCount = mailMode === 'all'
+    ? getPersonsWithEmail().length
+    : mailMode === 'years'
+      ? getPersonsWithEmail().filter(p => mailSelectedYears.has(String(p['Aankomstjaar']))).length
+      : mailSelectedIds.size;
+  sumEl.innerHTML = `<strong>${emails.length}</strong> uniek e-mailadres${emails.length === 1 ? '' : 'sen'} bij <strong>${personCount}</strong> ${personCount === 1 ? 'persoon' : 'personen'}.`;
+  btn.textContent = `Verstuur naar ${emails.length} ${emails.length === 1 ? 'ontvanger' : 'ontvangers'}`;
+  btn.disabled = emails.length === 0;
+}
+
+function renderMailRecipientArea() {
+  const area = document.getElementById('mail-recipient-area');
+  if (mailMode === 'all') {
+    const all = getPersonsWithEmail();
+    area.innerHTML = all.length
+      ? `<div>Alle <strong>${all.length}</strong> leden met een geregistreerd e-mailadres ontvangen de mail.</div>`
+      : '<div class="empty">Geen leden met e-mailadres gevonden.</div>';
+  } else if (mailMode === 'years') {
+    // Tel per jaar
+    const counts = {};
+    getPersonsWithEmail().forEach(p => {
+      const j = p['Aankomstjaar'];
+      if (!j) return;
+      counts[String(j)] = (counts[String(j)] || 0) + 1;
+    });
+    const years = Object.keys(counts).sort((a, b) => Number(b) - Number(a));
+    if (years.length === 0) {
+      area.innerHTML = '<div class="empty">Geen jaargangen met e-mailadressen.</div>';
+      return;
+    }
+    area.innerHTML = `
+      <button type="button" class="mail-toggle-all" id="mail-years-all">Alle / geen</button>
+      <div class="mail-year-grid">
+        ${years.map(y => `
+          <label class="mail-year-chip ${mailSelectedYears.has(y) ? 'checked' : ''}" data-year="${y}">
+            <input type="checkbox" ${mailSelectedYears.has(y) ? 'checked' : ''}>
+            <span>${y}</span><span class="count">(${counts[y]})</span>
+          </label>
+        `).join('')}
+      </div>`;
+  } else {
+    // Individueel met zoek
+    const all = getPersonsWithEmail().slice().sort((a,b) =>
+      (a['Achternaam'] || '').localeCompare(b['Achternaam'] || ''));
+    area.innerHTML = `
+      <input type="text" id="mail-person-search" class="mail-person-search" placeholder="Zoek op naam…">
+      <button type="button" class="mail-toggle-all" id="mail-people-all">Alle / geen zichtbaar</button>
+      <div id="mail-person-list">
+        ${all.map(p => {
+          const id = String(p._id);
+          const naam = `${(p['Voorletters']||'').trim()} ${(p['Tussenvoegsel']||'').trim()} ${(p['Achternaam']||'').trim()}`.replace(/\s+/g,' ').trim();
+          const jaar = p['Aankomstjaar'] || '—';
+          const emails = emailsForPerson(p);
+          return `
+            <label class="mail-person-row" data-id="${escapeHtml(id)}" data-search="${escapeHtml((naam + ' ' + jaar + ' ' + emails.join(' ')).toLowerCase())}">
+              <input type="checkbox" ${mailSelectedIds.has(id) ? 'checked' : ''}>
+              <span class="mail-person-name">${escapeHtml(naam)}</span>
+              <span class="mail-person-meta">${escapeHtml(String(jaar))} · ${emails.length} adres${emails.length === 1 ? '' : 'sen'}</span>
+            </label>`;
+        }).join('')}
+      </div>`;
+  }
+  refreshMailSummary();
+}
+
+function openMailModal() {
+  if (!isAdmin()) return;
+  mailMode = 'all';
+  mailSelectedYears.clear();
+  mailSelectedIds.clear();
+  document.querySelectorAll('.mail-mode-tab').forEach(b => b.classList.toggle('active', b.dataset.mailMode === 'all'));
+  document.getElementById('mail-replyto').value = adminUser?.email || '';
+  document.getElementById('mail-subject').value = '';
+  document.getElementById('mail-html').value = '';
+  document.getElementById('mail-status').textContent = '';
+  document.getElementById('mail-status').className = 'mail-status';
+  renderMailRecipientArea();
+  document.getElementById('mail-modal').classList.remove('hidden');
+}
+
+document.getElementById('mail-btn').addEventListener('click', openMailModal);
+document.getElementById('close-mail-modal').addEventListener('click', () => {
+  document.getElementById('mail-modal').classList.add('hidden');
+});
+
+// Mode tabs
+document.querySelectorAll('.mail-mode-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    mailMode = tab.dataset.mailMode;
+    document.querySelectorAll('.mail-mode-tab').forEach(b => b.classList.toggle('active', b === tab));
+    renderMailRecipientArea();
+  });
+});
+
+// Click handlers binnen recipient-area (delegated)
+document.getElementById('mail-recipient-area').addEventListener('click', e => {
+  // Year chip toggle
+  const chip = e.target.closest('.mail-year-chip');
+  if (chip) {
+    e.preventDefault();
+    const y = chip.dataset.year;
+    if (mailSelectedYears.has(y)) mailSelectedYears.delete(y);
+    else mailSelectedYears.add(y);
+    chip.classList.toggle('checked');
+    chip.querySelector('input').checked = mailSelectedYears.has(y);
+    refreshMailSummary();
+    return;
+  }
+  // Person row toggle
+  const row = e.target.closest('.mail-person-row');
+  if (row) {
+    e.preventDefault();
+    const id = row.dataset.id;
+    if (mailSelectedIds.has(id)) mailSelectedIds.delete(id);
+    else mailSelectedIds.add(id);
+    row.querySelector('input').checked = mailSelectedIds.has(id);
+    refreshMailSummary();
+    return;
+  }
+  // "Alle/geen" voor jaargangen
+  if (e.target.id === 'mail-years-all') {
+    const counts = {};
+    getPersonsWithEmail().forEach(p => { const j = p['Aankomstjaar']; if (j) counts[String(j)] = true; });
+    const allYears = Object.keys(counts);
+    if (mailSelectedYears.size === allYears.length) {
+      mailSelectedYears.clear();
+    } else {
+      mailSelectedYears.clear();
+      allYears.forEach(y => mailSelectedYears.add(y));
+    }
+    renderMailRecipientArea();
+    return;
+  }
+  // "Alle/geen zichtbaar" voor personen
+  if (e.target.id === 'mail-people-all') {
+    const search = (document.getElementById('mail-person-search')?.value || '').toLowerCase().trim();
+    const visible = [...document.querySelectorAll('.mail-person-row')].filter(r => {
+      if (!search) return true;
+      return r.dataset.search.includes(search);
+    });
+    const allChecked = visible.every(r => mailSelectedIds.has(r.dataset.id));
+    visible.forEach(r => {
+      const id = r.dataset.id;
+      if (allChecked) mailSelectedIds.delete(id); else mailSelectedIds.add(id);
+      r.querySelector('input').checked = mailSelectedIds.has(id);
+    });
+    refreshMailSummary();
+  }
+});
+
+// Person search filter
+document.getElementById('mail-recipient-area').addEventListener('input', e => {
+  if (e.target.id !== 'mail-person-search') return;
+  const q = e.target.value.toLowerCase().trim();
+  document.querySelectorAll('.mail-person-row').forEach(r => {
+    r.style.display = (!q || r.dataset.search.includes(q)) ? '' : 'none';
+  });
+});
+
+// Submit
+document.getElementById('mail-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const recipients = computeMailRecipients();
+  if (recipients.length === 0) return;
+  const subject = document.getElementById('mail-subject').value.trim();
+  const html = document.getElementById('mail-html').value.trim();
+  const replyTo = document.getElementById('mail-replyto').value.trim();
+  if (!subject || !html) return;
+  if (!confirm(`Mail versturen naar ${recipients.length} ontvanger${recipients.length === 1 ? '' : 's'}?`)) return;
+
+  const btn = document.getElementById('mail-send-btn');
+  const status = document.getElementById('mail-status');
+  btn.disabled = true; btn.textContent = 'Versturen…';
+  status.className = 'mail-status'; status.textContent = `Bezig met versturen…`;
+
+  try {
+    const res = await fetch('/api/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, html, recipients, replyTo: replyTo || null })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      status.className = 'mail-status error';
+      status.textContent = data.error || 'Versturen mislukt.';
+    } else {
+      status.className = 'mail-status success';
+      status.innerHTML = `<strong>Klaar.</strong> ${data.ok} verstuurd, ${data.failed} mislukt (van ${data.total}).`
+        + (data.errors && data.errors.length ? `<br><small style="color:var(--gray)">Eerste fouten: ${data.errors.map(x => `${x.email}: ${x.message}`).join(' / ')}</small>` : '');
+    }
+  } catch (err) {
+    status.className = 'mail-status error';
+    status.textContent = 'Netwerkfout: ' + err.message;
+  } finally {
+    refreshMailSummary();
+    document.getElementById('mail-send-btn').disabled = false;
+  }
+});
+
 // ==================== EXCEL EXPORT ====================
 document.getElementById('export-excel').addEventListener('click', () => {
   if (typeof XLSX === 'undefined') {
@@ -4923,6 +5250,46 @@ async function submitAlbumForm() {
       <div style="font-size:0.72rem;color:var(--gray);font-family:Inter,sans-serif">modern hotel · staalblauw</div>
     </div>
   </button>
+</div>
+
+<!-- Mail-versturen modal -->
+<div class="modal-overlay hidden" id="mail-modal">
+  <div class="modal-box wide mail-modal-box">
+    <button class="modal-close" id="close-mail-modal">✕</button>
+    <h3>Mail versturen</h3>
+
+    <div class="mail-section">
+      <div class="mail-section-label">Ontvangers</div>
+      <div class="mail-mode-tabs">
+        <button class="mail-mode-tab active" data-mail-mode="all">Iedereen met e-mail</button>
+        <button class="mail-mode-tab" data-mail-mode="years">Per jaargang</button>
+        <button class="mail-mode-tab" data-mail-mode="individual">Individueel</button>
+      </div>
+      <div class="mail-recipient-area" id="mail-recipient-area"></div>
+      <div class="mail-summary" id="mail-summary"></div>
+    </div>
+
+    <form id="mail-form">
+      <div class="mail-form-field">
+        <label>Reply-To (antwoord-adres)</label>
+        <input type="email" id="mail-replyto" placeholder="bv. praeses@…">
+      </div>
+      <div class="mail-form-field">
+        <label>Onderwerp</label>
+        <input type="text" id="mail-subject" required placeholder="Bijvoorbeeld: Uitnodiging reünie 2026">
+      </div>
+      <div class="mail-form-field">
+        <label>Bericht (HTML toegestaan, gebruik &lt;br&gt; of &lt;p&gt;)</label>
+        <textarea id="mail-html" required placeholder="Beste oud-huisgenoten,
+
+…
+
+Met vriendelijke groet,"></textarea>
+      </div>
+      <button type="submit" class="mail-send-btn" id="mail-send-btn">Verstuur naar 0 ontvangers</button>
+      <div class="mail-status" id="mail-status"></div>
+    </form>
+  </div>
 </div>
 
 <!-- Login modal -->
