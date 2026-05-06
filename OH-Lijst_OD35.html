@@ -4391,14 +4391,16 @@ function refreshMailSummary() {
   const emails = computeMailRecipients();
   const sumEl = document.getElementById('mail-summary');
   const btn = document.getElementById('mail-send-btn');
+  const copyBtn = document.getElementById('mail-copy-btn');
   const personCount = mailMode === 'all'
     ? getPersonsWithEmail().length
     : mailMode === 'years'
       ? getPersonsWithEmail().filter(p => mailSelectedYears.has(String(p['Aankomstjaar']))).length
       : mailSelectedIds.size;
   sumEl.innerHTML = `<strong>${emails.length}</strong> uniek e-mailadres${emails.length === 1 ? '' : 'sen'} bij <strong>${personCount}</strong> ${personCount === 1 ? 'persoon' : 'personen'}.`;
-  btn.textContent = `Verstuur naar ${emails.length} ${emails.length === 1 ? 'ontvanger' : 'ontvangers'}`;
+  btn.textContent = `Open in mailprogramma (${emails.length})`;
   btn.disabled = emails.length === 0;
+  if (copyBtn) copyBtn.disabled = emails.length === 0;
 }
 
 function renderMailRecipientArea() {
@@ -4462,7 +4464,6 @@ function openMailModal() {
   mailSelectedYears.clear();
   mailSelectedIds.clear();
   document.querySelectorAll('.mail-mode-tab').forEach(b => b.classList.toggle('active', b.dataset.mailMode === 'all'));
-  document.getElementById('mail-replyto').value = adminUser?.email || '';
   document.getElementById('mail-subject').value = '';
   document.getElementById('mail-html').value = '';
   document.getElementById('mail-status').textContent = '';
@@ -4550,43 +4551,68 @@ document.getElementById('mail-recipient-area').addEventListener('input', e => {
   });
 });
 
-// Submit
-document.getElementById('mail-form').addEventListener('submit', async e => {
+// Submit — opent default mail client met BCC
+document.getElementById('mail-form').addEventListener('submit', e => {
   e.preventDefault();
   const recipients = computeMailRecipients();
   if (recipients.length === 0) return;
   const subject = document.getElementById('mail-subject').value.trim();
-  const html = document.getElementById('mail-html').value.trim();
-  const replyTo = document.getElementById('mail-replyto').value.trim();
-  if (!subject || !html) return;
-  if (!confirm(`Mail versturen naar ${recipients.length} ontvanger${recipients.length === 1 ? '' : 's'}?`)) return;
-
-  const btn = document.getElementById('mail-send-btn');
+  const body = document.getElementById('mail-html').value;
   const status = document.getElementById('mail-status');
-  btn.disabled = true; btn.textContent = 'Versturen…';
-  status.className = 'mail-status'; status.textContent = `Bezig met versturen…`;
 
-  try {
-    const res = await fetch('/api/broadcast', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subject, html, recipients, replyTo: replyTo || null })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      status.className = 'mail-status error';
-      status.textContent = data.error || 'Versturen mislukt.';
-    } else {
-      status.className = 'mail-status success';
-      status.innerHTML = `<strong>Klaar.</strong> ${data.ok} verstuurd, ${data.failed} mislukt (van ${data.total}).`
-        + (data.errors && data.errors.length ? `<br><small style="color:var(--gray)">Eerste fouten: ${data.errors.map(x => `${x.email}: ${x.message}`).join(' / ')}</small>` : '');
-    }
-  } catch (err) {
+  // Body schoonmaken: HTML tags vervangen door tekst-equivalenten zodat het in plain-tekst mail goed leesbaar is
+  const plainBody = body
+    .replace(/<\s*br\s*\/?>/gi, '\n')
+    .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
+    .replace(/<\/?p[^>]*>/gi, '')
+    .replace(/<[^>]+>/g, '');
+
+  const params = new URLSearchParams();
+  params.set('bcc', recipients.join(','));
+  if (subject) params.set('subject', subject);
+  if (plainBody.trim()) params.set('body', plainBody);
+  // URLSearchParams encodeert + als spatie; mailto wil %20. We bouwen handmatig.
+  const qs = [];
+  qs.push('bcc=' + recipients.map(encodeURIComponent).join(','));
+  if (subject) qs.push('subject=' + encodeURIComponent(subject));
+  if (plainBody.trim()) qs.push('body=' + encodeURIComponent(plainBody));
+  const mailtoUrl = 'mailto:?' + qs.join('&');
+
+  // Browsers hebben een limiet van ~2000 chars. Waarschuw als het te lang wordt.
+  if (mailtoUrl.length > 6000) {
     status.className = 'mail-status error';
-    status.textContent = 'Netwerkfout: ' + err.message;
-  } finally {
-    refreshMailSummary();
-    document.getElementById('mail-send-btn').disabled = false;
+    status.innerHTML = `Te veel ontvangers (${recipients.length}) voor een mailto-link. Gebruik <strong>Kopieer adressen</strong> en plak ze in je mailprogramma.`;
+    return;
+  }
+  status.className = 'mail-status success';
+  status.textContent = `Mailprogramma openen met ${recipients.length} ontvanger${recipients.length === 1 ? '' : 's'} in BCC…`;
+  window.location.href = mailtoUrl;
+});
+
+// Kopieer adressen naar klembord
+document.getElementById('mail-copy-btn').addEventListener('click', async () => {
+  const recipients = computeMailRecipients();
+  if (recipients.length === 0) return;
+  const status = document.getElementById('mail-status');
+  const text = recipients.join(', ');
+  try {
+    await navigator.clipboard.writeText(text);
+    status.className = 'mail-status success';
+    status.textContent = `${recipients.length} adres${recipients.length === 1 ? '' : 'sen'} gekopieerd. Plak ze in het BCC-veld van je mail.`;
+  } catch (err) {
+    // Fallback voor oudere browsers
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try {
+      document.execCommand('copy');
+      status.className = 'mail-status success';
+      status.textContent = `${recipients.length} adressen gekopieerd.`;
+    } catch (err2) {
+      status.className = 'mail-status error';
+      status.textContent = 'Kopiëren mislukt. Selecteer en kopieer handmatig: ' + text.slice(0, 100) + '…';
+    }
+    ta.remove();
   }
 });
 
@@ -5271,22 +5297,24 @@ async function submitAlbumForm() {
 
     <form id="mail-form">
       <div class="mail-form-field">
-        <label>Reply-To (antwoord-adres)</label>
-        <input type="email" id="mail-replyto" placeholder="bv. praeses@…">
+        <label>Onderwerp (optioneel)</label>
+        <input type="text" id="mail-subject" placeholder="Bijvoorbeeld: Uitnodiging reünie 2026">
       </div>
       <div class="mail-form-field">
-        <label>Onderwerp</label>
-        <input type="text" id="mail-subject" required placeholder="Bijvoorbeeld: Uitnodiging reünie 2026">
-      </div>
-      <div class="mail-form-field">
-        <label>Bericht (HTML toegestaan, gebruik &lt;br&gt; of &lt;p&gt;)</label>
-        <textarea id="mail-html" required placeholder="Beste oud-huisgenoten,
+        <label>Bericht (optioneel — kun je ook in je mailprogramma typen)</label>
+        <textarea id="mail-html" placeholder="Beste oud-huisgenoten,
 
 …
 
 Met vriendelijke groet,"></textarea>
       </div>
-      <button type="submit" class="mail-send-btn" id="mail-send-btn">Verstuur naar 0 ontvangers</button>
+      <p style="font-size:0.82rem; color:var(--gray); margin-bottom:0.7rem;">
+        De adressen worden als <strong>BCC</strong> ingevuld zodat niemand elkaars adres ziet. Je mail wordt geopend in jouw eigen mailprogramma.
+      </p>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button type="submit" class="mail-send-btn" id="mail-send-btn" style="flex:2;">Open in mailprogramma (0)</button>
+        <button type="button" class="mail-send-btn" id="mail-copy-btn" style="flex:1; background:transparent; color:var(--burgundy); border:1px solid var(--burgundy);">Kopieer adressen</button>
+      </div>
       <div class="mail-status" id="mail-status"></div>
     </form>
   </div>
