@@ -2341,7 +2341,7 @@
   </select>
   <button id="reset" class="reset-btn">Reset</button>
   <button id="export-excel" class="export-btn" title="Exporteer alle data naar Excel">Excel export</button>
-  <button id="mail-btn" class="export-btn admin-only" title="Mail versturen naar leden" style="display:none">✉ Mail versturen</button>
+  <button id="mail-btn" class="export-btn" title="Mail versturen naar leden">✉ Mail versturen</button>
 </div>
 
 <div class="alphabet" id="alphabet"></div>
@@ -2832,7 +2832,9 @@ const STAR_SVG = '<svg class="oudste-star" viewBox="0 0 24 24" aria-label="Huis 
 
 // Stable person ID — based on Achternaam + Voorletters + Aankomstjaar (independent of array index)
 function getPersonId(p) {
-  return [
+  // Gebruik de Supabase UUID — uniek per persoon, ook bij dezelfde naam+jaar.
+  // Fallback voor data die nog geen _id heeft (zou niet meer voor mogen komen).
+  return p && p._id ? String(p._id) : [
     (p['Achternaam'] || '').toLowerCase().replace(/\s+/g, '_'),
     (p['Voorletters'] || '').toLowerCase().replace(/\./g, '').replace(/\s+/g, ''),
     (p['Tussenvoegsel'] || '').toLowerCase().replace(/\s+/g, ''),
@@ -4459,7 +4461,6 @@ function renderMailRecipientArea() {
 }
 
 function openMailModal() {
-  if (!isAdmin()) return;
   mailMode = 'all';
   mailSelectedYears.clear();
   mailSelectedIds.clear();
