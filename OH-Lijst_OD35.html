@@ -2524,6 +2524,16 @@
     <p class="modal-sub">De nieuwe admin krijgt direct toegang. Stuur ze de inloggegevens via mail.</p>
     <form id="invite-admin-form">
       <div class="login-field">
+        <label>Kies een lid uit de lijst (laatste 25 jaar)</label>
+        <select id="invite-from-list" style="width:100%; padding:0.55rem 0.65rem; border:1px solid var(--line); background:var(--paper); font-family:var(--font-body); font-size:0.95rem;">
+          <option value="">— of vul hieronder zelf in —</option>
+        </select>
+      </div>
+      <div class="login-field" id="invite-email-choice" style="display:none;">
+        <label>Welk e-mailadres?</label>
+        <div id="invite-email-options" style="display:flex; flex-direction:column; gap:0.4rem; padding:0.4rem 0;"></div>
+      </div>
+      <div class="login-field">
         <label>E-mail van nieuwe admin</label>
         <input type="email" id="invite-email" required placeholder="naam@voorbeeld.nl">
       </div>
@@ -3699,8 +3709,80 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('invite-result').innerHTML = '';
     document.getElementById('invite-submit').disabled = false;
     document.getElementById('invite-submit').textContent = 'Aanmaken';
+    populateInviteMemberSelect();
+    document.getElementById('invite-from-list').value = '';
+    document.getElementById('invite-email-choice').style.display = 'none';
     document.getElementById('invite-admin-modal').classList.remove('hidden');
   });
+
+  // Vul de ledenlijst-dropdown
+  function populateInviteMemberSelect() {
+    const sel = document.getElementById('invite-from-list');
+    if (!sel || !Array.isArray(PEOPLE)) return;
+    // Behoud eerste optie
+    sel.innerHTML = '<option value="">— of vul hieronder zelf in —</option>';
+    const huidigJaar = new Date().getFullYear();
+    const minJaar = huidigJaar - 25;
+    const candidates = PEOPLE
+      .filter(p => p['Aankomstjaar'] && Number(p['Aankomstjaar']) >= minJaar)
+      .filter(p => {
+        for (let i = 1; i <= 5; i++) if (p[`E-mail ${i}`]) return true;
+        return false;
+      })
+      .sort((a, b) => {
+        const ya = Number(a['Aankomstjaar']) || 0, yb = Number(b['Aankomstjaar']) || 0;
+        if (ya !== yb) return yb - ya;
+        return (a['Achternaam'] || '').localeCompare(b['Achternaam'] || '');
+      });
+    candidates.forEach(p => {
+      const naam = [p['Voorletters'], p['Tussenvoegsel'], p['Achternaam']].filter(Boolean).join(' ').trim();
+      const opt = document.createElement('option');
+      opt.value = String(p._id);
+      opt.textContent = `${naam} (${p['Aankomstjaar']})`;
+      sel.appendChild(opt);
+    });
+  }
+
+  // Bij selectie: vul naam + bied email-keuze
+  document.getElementById('invite-from-list').addEventListener('change', e => {
+    const id = e.target.value;
+    const choiceArea = document.getElementById('invite-email-choice');
+    const optionsDiv = document.getElementById('invite-email-options');
+    if (!id) {
+      choiceArea.style.display = 'none';
+      return;
+    }
+    const p = PEOPLE.find(x => String(x._id) === id);
+    if (!p) return;
+    const naam = [p['Voorletters'], p['Tussenvoegsel'], p['Achternaam']].filter(Boolean).join(' ').trim();
+    document.getElementById('invite-naam').value = naam;
+    const emails = [];
+    for (let i = 1; i <= 5; i++) if (p[`E-mail ${i}`]) emails.push(p[`E-mail ${i}`]);
+    if (emails.length === 0) {
+      choiceArea.style.display = 'none';
+      document.getElementById('invite-email').value = '';
+    } else if (emails.length === 1) {
+      choiceArea.style.display = 'none';
+      document.getElementById('invite-email').value = emails[0];
+    } else {
+      // Toon radio's
+      optionsDiv.innerHTML = emails.map((em, i) => `
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-size:0.92rem;">
+          <input type="radio" name="invite-email-pick" value="${escapeHtml(em)}" ${i === 0 ? 'checked' : ''}>
+          <span>${escapeHtml(em)}</span>
+        </label>`).join('');
+      choiceArea.style.display = 'block';
+      document.getElementById('invite-email').value = emails[0];
+    }
+  });
+
+  // Bij wisselen radio: update email-veld
+  document.getElementById('invite-email-options').addEventListener('change', e => {
+    if (e.target.name === 'invite-email-pick') {
+      document.getElementById('invite-email').value = e.target.value;
+    }
+  });
+
   document.getElementById('close-invite-admin-modal').addEventListener('click', () => {
     document.getElementById('invite-admin-modal').classList.add('hidden');
   });
