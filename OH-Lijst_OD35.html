@@ -2830,7 +2830,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const pendingId = window._pendingInschrijvingId;
           window._pendingInschrijvingId = null;
           try {
-            await db.from('inschrijvingen').update({ afgehandeld: true, status: 'goedgekeurd' }).eq('id', pendingId);
+            await db.from('wijzigingsverzoeken').update({ afgehandeld: true }).eq('id', pendingId);
             const ins = inschrijvingenList.find(x => x.id === pendingId);
             if (ins) { ins.afgehandeld = true; ins.status = 'goedgekeurd'; }
             updateWijzigingenBadge();
@@ -3593,14 +3593,24 @@ async function loadWijzigingen() {
   const list = document.getElementById('wijz-list');
   if (list) list.innerHTML = '<div class="wijz-empty">Laden…</div>';
   try {
-    const [{ data: wd, error: we }, { data: id, error: ie }] = await Promise.all([
-      db.from('wijzigingsverzoeken').select('*').order('aangemaakt_op', { ascending: false }),
-      db.from('inschrijvingen').select('*').order('aangemaakt_op', { ascending: false })
-    ]);
-    if (we) throw we;
-    if (ie && !ie.message?.includes('does not exist')) throw ie;
-    wijzigingenList = wd || [];
-    inschrijvingenList = id || [];
+    const { data, error } = await db.from('wijzigingsverzoeken')
+      .select('*').order('aangemaakt_op', { ascending: false });
+    if (error) throw error;
+    // Splits inschrijvingen (marker veld) van echte wijzigingen
+    const all = data || [];
+    wijzigingenList = all.filter(r => r.veld !== '__INSCHRIJVING__');
+    inschrijvingenList = all.filter(r => r.veld === '__INSCHRIJVING__').map(r => {
+      let parsed = {};
+      try { parsed = JSON.parse(r.wijziging || '{}'); } catch(_) {}
+      return {
+        id: r.id,
+        data: parsed,
+        afgehandeld: r.afgehandeld,
+        status: r.afgehandeld ? (r.toelichting?.startsWith('[AFGEKEURD]') ? 'afgekeurd' : 'goedgekeurd') : 'open',
+        aangemaakt_op: r.aangemaakt_op,
+        _raw_id: r.id, // zelfde id, ze zitten in dezelfde tabel
+      };
+    });
     renderWijzigingen();
     updateWijzigingenBadge();
   } catch (e) {
@@ -3743,15 +3753,18 @@ document.getElementById('wijz-list').addEventListener('click', async e => {
     openPersonModalFromInschrijving(ins);
     return;
   }
-  // Inschrijving afkeuren
+  // Inschrijving afkeuren — markeer in wijzigingsverzoeken
   if (e.target.matches('[data-action="reject-ins"]')) {
     const id = e.target.dataset.id;
     if (!confirm('Deze inschrijving afkeuren?')) return;
     try {
-      const { error } = await db.from('inschrijvingen').update({ afgehandeld: true, status: 'afgekeurd' }).eq('id', id);
+      const ins = inschrijvingenList.find(x => x.id === id);
+      const oldNote = ins ? (ins.data?.opmerking || '') : '';
+      const { error } = await db.from('wijzigingsverzoeken')
+        .update({ afgehandeld: true, toelichting: '[AFGEKEURD] ' + oldNote })
+        .eq('id', id);
       if (error) throw error;
-      const i = inschrijvingenList.find(x => x.id === id);
-      if (i) { i.afgehandeld = true; i.status = 'afgekeurd'; }
+      if (ins) { ins.afgehandeld = true; ins.status = 'afgekeurd'; }
       renderWijzigingen(); updateWijzigingenBadge();
     } catch (err) { alert('Fout: ' + err.message); }
     return;
@@ -3761,7 +3774,7 @@ document.getElementById('wijz-list').addEventListener('click', async e => {
     const id = e.target.dataset.id;
     if (!confirm('Deze inschrijving definitief verwijderen?')) return;
     try {
-      const { error } = await db.from('inschrijvingen').delete().eq('id', id);
+      const { error } = await db.from('wijzigingsverzoeken').delete().eq('id', id);
       if (error) throw error;
       inschrijvingenList = inschrijvingenList.filter(x => x.id !== id);
       renderWijzigingen(); updateWijzigingenBadge();
@@ -5822,10 +5835,20 @@ Met vriendelijke groet,"></textarea>
     try {
       const SUPABASE_URL = 'https://mxbtmbcgycjqapjzulrp.supabase.co';
       const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YnRtYmNneWNqcWFwanp1bHJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDQ4MzgsImV4cCI6MjA5MzQ4MDgzOH0.6Qowa_mqhH7YtrljF5fZnQzUaG_u4N5TodcnLzRhYSM';
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/inschrijvingen`, {
+      // Schrijf naar wijzigingsverzoeken met marker, zodat geen aparte tabel nodig is
+      const naam = [data.voorletters, data.tussenvoegsel, data.achternaam].filter(Boolean).join(' ').trim();
+      const verzoek = {
+        persoon: '[INSCHRIJVING] ' + (naam || '(geen naam)'),
+        aanvrager_naam: naam || '(geen naam)',
+        aanvrager_email: data.email_1 || '',
+        veld: '__INSCHRIJVING__',
+        wijziging: JSON.stringify(data),
+        toelichting: data.opmerking || null,
+      };
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/wijzigingsverzoeken`, {
         method: 'POST',
         headers: { 'apikey': ANON, 'Authorization': `Bearer ${ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ data })
+        body: JSON.stringify(verzoek)
       });
       if (!res.ok) {
         const err = await res.text();
