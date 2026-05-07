@@ -2395,6 +2395,7 @@
   <button class="tab-btn" data-tab="contacten">Contacten</button>
   <button class="tab-btn" data-tab="geschiedenis">Geschiedenis</button>
   <button class="tab-btn admin-only" data-tab="wijzigingen" style="display:none">Verzoeken <span id="wijzigingen-badge" class="tab-badge"></span></button>
+  <button class="tab-btn hoofdadmin-only" data-tab="adminbeheer" style="display:none">Admin-beheer</button>
 </nav>
 
 <!-- ==================== TAB: PERSONEN ==================== -->
@@ -2502,6 +2503,44 @@
   </div>
   <div id="fotos-content"></div>
 </div><!-- /panel-fotos -->
+
+<!-- ==================== TAB: ADMIN-BEHEER (hoofdadmin only) ==================== -->
+<div class="tab-panel" id="panel-adminbeheer">
+  <div class="wijz-header">
+    <h2>Admin-beheer</h2>
+    <button id="invite-admin-btn" class="export-btn" style="background:var(--burgundy); color:var(--paper); border:none;">+ Nieuwe admin uitnodigen</button>
+  </div>
+  <p style="color:var(--gray); font-size:0.88rem; margin-bottom:1rem;">
+    Hier zie je alle admins en kun je nieuwe admins toevoegen. Alleen jij als <strong>hoofdadmin</strong> hebt toegang tot deze pagina.
+  </p>
+  <div id="admin-list" class="wijz-list"></div>
+</div>
+
+<!-- Admin uitnodigen modal -->
+<div class="modal-overlay hidden" id="invite-admin-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="close-invite-admin-modal">✕</button>
+    <h3>Nieuwe admin uitnodigen</h3>
+    <p class="modal-sub">De nieuwe admin krijgt direct toegang. Stuur ze de inloggegevens via mail.</p>
+    <form id="invite-admin-form">
+      <div class="login-field">
+        <label>E-mail van nieuwe admin</label>
+        <input type="email" id="invite-email" required placeholder="naam@voorbeeld.nl">
+      </div>
+      <div class="login-field">
+        <label>Naam (optioneel)</label>
+        <input type="text" id="invite-naam" placeholder="Voor- en achternaam">
+      </div>
+      <div class="login-field">
+        <label>Wachtwoord <button type="button" id="invite-gen-pw" style="background:transparent; border:1px dashed var(--line); padding:2px 8px; cursor:pointer; font-size:0.78rem; margin-left:0.5rem; color:var(--burgundy); font-family:var(--font-body);">Genereer</button></label>
+        <input type="text" id="invite-pw" required minlength="8" placeholder="Minstens 8 tekens">
+      </div>
+      <button type="submit" class="login-btn" id="invite-submit">Aanmaken</button>
+      <div class="login-error" id="invite-error"></div>
+      <div id="invite-result" style="margin-top:0.7rem;"></div>
+    </form>
+  </div>
+</div>
 
 <!-- ==================== TAB: WIJZIGINGSVERZOEKEN (admin only) ==================== -->
 <div class="tab-panel" id="panel-wijzigingen">
@@ -2637,7 +2676,9 @@ async function deletePerson(id) {
 
 // ── Admin state ───────────────────────────────────────────────────────────────
 let adminUser = null;
+const HOOFDADMIN_EMAIL = 'dogteromc03@gmail.com';
 function isAdmin() { return !!adminUser; }
+function isHoofdadmin() { return !!adminUser && (adminUser.email || '').toLowerCase() === HOOFDADMIN_EMAIL.toLowerCase(); }
 
 function updateAdminUI() {
   const bar = document.getElementById('admin-bar');
@@ -2657,6 +2698,10 @@ function updateAdminUI() {
   // Toon/verberg admin-only UI elementen
   document.querySelectorAll('.admin-only').forEach(el => {
     el.style.display = adminUser ? '' : 'none';
+  });
+  // Hoofdadmin-only elementen
+  document.querySelectorAll('.hoofdadmin-only').forEach(el => {
+    el.style.display = isHoofdadmin() ? '' : 'none';
   });
   // Laad wijzigingen badge zodra admin inlogt
   if (adminUser && typeof loadWijzigingen === 'function') {
@@ -3582,6 +3627,183 @@ document.getElementById('tab-nav').addEventListener('click', e => {
   if (tab === 'geschiedenis') renderHistory();
   if (tab === 'fotos') { loadAlbums().then(renderFotosTab); }
   if (tab === 'wijzigingen') { loadWijzigingen(); }
+  if (tab === 'adminbeheer') { loadAdmins(); }
+});
+
+// ==================== ADMIN-BEHEER (alleen hoofdadmin) ====================
+let adminsList = [];
+
+async function loadAdmins() {
+  if (!isHoofdadmin()) return;
+  const list = document.getElementById('admin-list');
+  if (list) list.innerHTML = '<div class="wijz-empty">Laden…</div>';
+  try {
+    const { data, error } = await db.from('admins').select('*').order('aangemaakt_op', { ascending: true });
+    if (error) throw error;
+    adminsList = data || [];
+    renderAdmins();
+  } catch (e) {
+    if (list) list.innerHTML = `<div class="wijz-empty">Fout: ${escapeHtml(e.message)}<br><small>Tabel "admins" nog niet aangemaakt? Run de SQL.</small></div>`;
+  }
+}
+
+function renderAdmins() {
+  const list = document.getElementById('admin-list');
+  if (!list) return;
+  if (adminsList.length === 0) {
+    list.innerHTML = '<div class="wijz-empty">Geen admins gevonden.</div>';
+    return;
+  }
+  list.innerHTML = adminsList.map(a => {
+    const isHa = a.rol === 'hoofdadmin';
+    const datum = a.aangemaakt_op ? new Date(a.aangemaakt_op).toLocaleDateString('nl-NL') : '';
+    const pwHtml = a.wachtwoord
+      ? `<code style="background:var(--paper-warm);padding:2px 8px;font-family:var(--font-mono);font-size:0.82rem;letter-spacing:0.05em;" data-pw="${escapeHtml(a.wachtwoord)}">${escapeHtml(a.wachtwoord)}</code>
+         <button class="wijz-delete-btn" style="padding:0.25rem 0.6rem;font-size:0.78rem;" data-action="copy-pw" data-pw="${escapeHtml(a.wachtwoord)}">Kopieer</button>`
+      : `<span style="color:var(--gray);font-style:italic;font-size:0.85rem;">— niet bekend —</span>`;
+    return `
+      <div class="wijz-card" data-email="${escapeHtml(a.email)}" style="border-left-color:${isHa ? '#a87a3a' : 'var(--burgundy)'};">
+        <div class="wijz-card-head">
+          <div class="wijz-card-persoon">
+            ${escapeHtml(a.naam || a.email)}
+            ${isHa ? '<span style="background:#a87a3a;color:white;padding:1px 8px;font-size:0.7rem;border-radius:9px;margin-left:0.5rem;">HOOFDADMIN</span>' : '<span style="background:var(--burgundy);color:white;padding:1px 8px;font-size:0.7rem;border-radius:9px;margin-left:0.5rem;">ADMIN</span>'}
+          </div>
+          <div class="wijz-card-datum">Sinds ${escapeHtml(datum)}</div>
+        </div>
+        <div class="wijz-row"><div class="label">E-mail</div><div class="value"><a href="mailto:${escapeHtml(a.email)}" style="color:var(--burgundy);">${escapeHtml(a.email)}</a></div></div>
+        <div class="wijz-row"><div class="label">Wachtwoord</div><div class="value">${pwHtml}</div></div>
+        ${!isHa ? `
+        <div class="wijz-actions" style="gap:0.5rem;flex-wrap:wrap;">
+          <button class="wijz-delete-btn" data-action="mail-credentials" data-email="${escapeHtml(a.email)}" data-pw="${escapeHtml(a.wachtwoord||'')}">Stuur inloggegevens via mail</button>
+          <button class="wijz-delete-btn" data-action="remove-admin" data-email="${escapeHtml(a.email)}">Verwijder admin</button>
+        </div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function genPassword(len = 12) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let pw = '';
+  for (let i = 0; i < len; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+  return pw;
+}
+
+// Admin-list click handlers (delegated)
+document.addEventListener('DOMContentLoaded', () => {
+  // Open uitnodig-modal
+  document.getElementById('invite-admin-btn').addEventListener('click', () => {
+    document.getElementById('invite-email').value = '';
+    document.getElementById('invite-naam').value = '';
+    document.getElementById('invite-pw').value = genPassword();
+    document.getElementById('invite-error').textContent = '';
+    document.getElementById('invite-result').innerHTML = '';
+    document.getElementById('invite-submit').disabled = false;
+    document.getElementById('invite-submit').textContent = 'Aanmaken';
+    document.getElementById('invite-admin-modal').classList.remove('hidden');
+  });
+  document.getElementById('close-invite-admin-modal').addEventListener('click', () => {
+    document.getElementById('invite-admin-modal').classList.add('hidden');
+  });
+  document.getElementById('invite-gen-pw').addEventListener('click', () => {
+    document.getElementById('invite-pw').value = genPassword();
+  });
+
+  // Submit nieuwe admin
+  document.getElementById('invite-admin-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('invite-email').value.trim().toLowerCase();
+    const naam = document.getElementById('invite-naam').value.trim();
+    const wachtwoord = document.getElementById('invite-pw').value;
+    const err = document.getElementById('invite-error');
+    const result = document.getElementById('invite-result');
+    const btn = document.getElementById('invite-submit');
+    err.textContent = ''; result.innerHTML = '';
+    if (!email || wachtwoord.length < 8) { err.textContent = 'E-mail en wachtwoord (≥8 tekens) verplicht.'; return; }
+
+    btn.disabled = true; btn.textContent = 'Bezig…';
+    try {
+      // 1. Voeg eerst admins-rij toe (terwijl we nog hoofdadmin sessie hebben)
+      const { error: insErr } = await db.from('admins').insert({ email, naam: naam || null, rol: 'admin', wachtwoord });
+      if (insErr && !insErr.message.includes('duplicate key')) throw insErr;
+
+      // 2. Bewaar huidige hoofdadmin sessie zodat we hem kunnen herstellen na signUp
+      const { data: { session: hoofdSession } } = await db.auth.getSession();
+
+      // 3. Maak nieuwe Supabase Auth user (signUp wisselt onze sessie)
+      const { error: signErr } = await db.auth.signUp({ email, password: wachtwoord });
+      if (signErr && !signErr.message.includes('already registered') && !signErr.message.includes('User already registered')) {
+        // Rollback: verwijder admins-rij die we net toevoegden
+        await db.from('admins').delete().eq('email', email);
+        // En herstel sessie
+        if (hoofdSession) await db.auth.setSession({ access_token: hoofdSession.access_token, refresh_token: hoofdSession.refresh_token });
+        throw signErr;
+      }
+
+      // 4. Herstel hoofdadmin sessie
+      if (hoofdSession) {
+        await db.auth.setSession({ access_token: hoofdSession.access_token, refresh_token: hoofdSession.refresh_token });
+      }
+
+      adminsList.push({ email, naam: naam || null, rol: 'admin', wachtwoord, aangemaakt_op: new Date().toISOString() });
+      renderAdmins();
+
+      // Bouw mailto link
+      const loginUrl = window.location.origin + '/';
+      const subject = encodeURIComponent('Je bent admin geworden van Oude Delft 35');
+      const body = encodeURIComponent(
+`Hi${naam ? ' ' + naam : ''},
+
+Je hebt admin-rechten gekregen voor de OD35 ledenlijst.
+
+Inloglink: ${loginUrl}
+E-mail: ${email}
+Wachtwoord: ${wachtwoord}
+
+Klik rechtsonder op het tandwiel-icoon om in te loggen.
+
+Met vriendelijke groet,
+${adminUser?.email || 'Hoofdadmin'}`
+      );
+      result.innerHTML = `<div style="color:#4a8c4a; font-size:0.9rem;">
+        <strong>✓ Admin aangemaakt.</strong><br>
+        <a href="mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}" style="display:inline-block; margin-top:0.5rem; background:var(--burgundy); color:var(--paper); padding:0.5rem 1rem; text-decoration:none;">Open mail met inloggegevens</a>
+      </div>`;
+      btn.textContent = 'Klaar';
+    } catch (e2) {
+      err.textContent = 'Fout: ' + (e2.message || e2);
+      btn.disabled = false; btn.textContent = 'Aanmaken';
+    }
+  });
+
+  // Acties op admin-list
+  document.getElementById('admin-list').addEventListener('click', async e => {
+    if (e.target.matches('[data-action="copy-pw"]')) {
+      const pw = e.target.dataset.pw;
+      try { await navigator.clipboard.writeText(pw); e.target.textContent = '✓'; setTimeout(()=>{e.target.textContent='Kopieer';}, 1500); } catch {}
+      return;
+    }
+    if (e.target.matches('[data-action="remove-admin"]')) {
+      const email = e.target.dataset.email;
+      if (!confirm(`Admin ${email} verwijderen uit de admins-tabel?\n\nLet op: de Supabase Auth gebruiker blijft bestaan en kan blijven inloggen als die niet ook in de Supabase dashboard wordt verwijderd.`)) return;
+      try {
+        const { error } = await db.from('admins').delete().eq('email', email);
+        if (error) throw error;
+        adminsList = adminsList.filter(x => x.email !== email);
+        renderAdmins();
+      } catch (err2) { alert('Fout: ' + err2.message); }
+      return;
+    }
+    if (e.target.matches('[data-action="mail-credentials"]')) {
+      const email = e.target.dataset.email;
+      const pw = e.target.dataset.pw;
+      if (!pw) { alert('Geen wachtwoord opgeslagen voor deze admin. Reset zelf het wachtwoord in Supabase.'); return; }
+      const loginUrl = window.location.origin + '/';
+      const subject = encodeURIComponent('Inloggegevens OD35 Ledenlijst');
+      const body = encodeURIComponent(`Hi,\n\nHier zijn je inloggegevens voor de OD35 ledenlijst.\n\nLink: ${loginUrl}\nE-mail: ${email}\nWachtwoord: ${pw}\n\nKlik rechtsonder op het tandwiel-icoon om in te loggen.\n\nGroet`);
+      window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
+      return;
+    }
+  });
 });
 
 // ==================== WIJZIGINGSVERZOEKEN + INSCHRIJVINGEN ====================
