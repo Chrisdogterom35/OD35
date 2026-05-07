@@ -3660,28 +3660,69 @@ list.addEventListener('submit', async e => {
 });
 
 // ==================== GLOBALE WIJZIGING-INDIENEN MODAL ====================
+function gwzPersoonLabel(p) {
+  const naam = [p['Voorletters'], p['Tussenvoegsel'], p['Achternaam']].filter(Boolean).join(' ').trim();
+  return `${naam}${p['Aankomstjaar'] ? ' ('+p['Aankomstjaar']+')' : ''}`;
+}
+
 function populateGlobalWijzPersoonSelect() {
-  const sel = document.getElementById('gwz-persoon');
+  const sel = document.getElementById('gwz-persoon-select');
   if (!sel || !Array.isArray(PEOPLE)) return;
-  sel.innerHTML = '<option value="">— kies een persoon —</option>';
+  sel.innerHTML = '<option value="">— of kies uit lijst —</option>';
   const sorted = PEOPLE.slice().sort((a, b) => {
     const ya = Number(a['Aankomstjaar']) || 0, yb = Number(b['Aankomstjaar']) || 0;
     if (ya !== yb) return yb - ya;
     return (a['Achternaam'] || '').localeCompare(b['Achternaam'] || '');
   });
   sorted.forEach(p => {
-    const naam = [p['Voorletters'], p['Tussenvoegsel'], p['Achternaam']].filter(Boolean).join(' ').trim();
     const opt = document.createElement('option');
     opt.value = String(p._id);
-    opt.textContent = `${naam}${p['Aankomstjaar'] ? ' ('+p['Aankomstjaar']+')' : ''}`;
+    opt.textContent = gwzPersoonLabel(p);
     sel.appendChild(opt);
   });
+}
+
+function setChosenPersoon(p) {
+  document.getElementById('gwz-persoon').value = p ? String(p._id) : '';
+  const ch = document.getElementById('gwz-persoon-chosen');
+  if (p) {
+    ch.innerHTML = `Geselecteerd: <strong>${escapeHtml(gwzPersoonLabel(p))}</strong>`;
+    ch.style.display = 'block';
+    document.getElementById('gwz-persoon-search').value = gwzPersoonLabel(p);
+    document.getElementById('gwz-persoon-select').value = String(p._id);
+  } else {
+    ch.style.display = 'none';
+    ch.innerHTML = '';
+  }
+  document.getElementById('gwz-persoon-suggestions').style.display = 'none';
+}
+
+function renderGwzSuggestions(query) {
+  const box = document.getElementById('gwz-persoon-suggestions');
+  if (!query) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const q = query.toLowerCase();
+  const matches = PEOPLE.filter(p => {
+    const label = gwzPersoonLabel(p).toLowerCase();
+    return label.includes(q);
+  }).slice(0, 8);
+  if (matches.length === 0) {
+    box.innerHTML = '<div style="padding:0.5rem 0.65rem; color:var(--gray); font-style:italic;">Geen resultaten</div>';
+    box.style.display = 'block';
+    return;
+  }
+  box.innerHTML = matches.map(p => `
+    <div class="gwz-suggestion" data-id="${escapeHtml(String(p._id))}" style="padding:0.5rem 0.65rem; cursor:pointer; border-bottom:1px solid var(--line-soft); font-size:0.92rem;">
+      ${escapeHtml(gwzPersoonLabel(p))}
+    </div>`).join('');
+  box.style.display = 'block';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('global-wijziging-btn').addEventListener('click', () => {
     populateGlobalWijzPersoonSelect();
-    document.getElementById('gwz-persoon').value = '';
+    setChosenPersoon(null);
+    document.getElementById('gwz-persoon-search').value = '';
+    document.getElementById('gwz-persoon-select').value = '';
     document.getElementById('gwz-aanvrager-naam').value = '';
     document.getElementById('gwz-aanvrager-email').value = '';
     document.getElementById('gwz-veld').value = '';
@@ -3692,6 +3733,41 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('gwz-submit').disabled = false;
     document.getElementById('gwz-submit').textContent = 'Verzoek versturen';
     document.getElementById('global-wijz-modal').classList.remove('hidden');
+  });
+
+  // Search input — toon suggesties terwijl getypt wordt
+  document.getElementById('gwz-persoon-search').addEventListener('input', e => {
+    renderGwzSuggestions(e.target.value.trim());
+  });
+  document.getElementById('gwz-persoon-search').addEventListener('focus', e => {
+    if (e.target.value.trim()) renderGwzSuggestions(e.target.value.trim());
+  });
+  document.getElementById('gwz-persoon-search').addEventListener('blur', () => {
+    setTimeout(() => { document.getElementById('gwz-persoon-suggestions').style.display = 'none'; }, 200);
+  });
+  // Klik op suggestie
+  document.getElementById('gwz-persoon-suggestions').addEventListener('mousedown', e => {
+    const item = e.target.closest('.gwz-suggestion');
+    if (!item) return;
+    const id = item.dataset.id;
+    const p = PEOPLE.find(x => String(x._id) === id);
+    if (p) setChosenPersoon(p);
+  });
+  // Hover-effect op suggesties
+  document.getElementById('gwz-persoon-suggestions').addEventListener('mouseover', e => {
+    const item = e.target.closest('.gwz-suggestion');
+    if (item) item.style.background = 'var(--paper-warm)';
+  });
+  document.getElementById('gwz-persoon-suggestions').addEventListener('mouseout', e => {
+    const item = e.target.closest('.gwz-suggestion');
+    if (item) item.style.background = '';
+  });
+  // Dropdown wijziging
+  document.getElementById('gwz-persoon-select').addEventListener('change', e => {
+    const id = e.target.value;
+    if (!id) { setChosenPersoon(null); return; }
+    const p = PEOPLE.find(x => String(x._id) === id);
+    if (p) setChosenPersoon(p);
   });
   document.getElementById('close-global-wijz-modal').addEventListener('click', () => {
     document.getElementById('global-wijz-modal').classList.add('hidden');
@@ -3704,7 +3780,7 @@ document.addEventListener('DOMContentLoaded', () => {
     err.textContent = '';
     const personId = document.getElementById('gwz-persoon').value;
     const p = PEOPLE.find(x => String(x._id) === personId);
-    if (!p) { err.textContent = 'Kies eerst een persoon.'; return; }
+    if (!p) { err.textContent = 'Kies eerst een persoon (typ in de zoekbalk of kies uit de lijst).'; return; }
     const naam = [p['Voorletters'], p['Tussenvoegsel'], p['Achternaam']].filter(Boolean).join(' ').trim();
     const persoonLabel = `${naam}${p['Aankomstjaar'] ? ' ('+p['Aankomstjaar']+')' : ''}`;
     const payload = {
@@ -5972,9 +6048,18 @@ async function submitAlbumForm() {
     <form id="global-wijz-form">
       <div class="login-field">
         <label>Welke persoon betreft het? *</label>
-        <select id="gwz-persoon" required style="width:100%; padding:0.55rem 0.65rem; border:1px solid var(--line); background:var(--paper); font-family:var(--font-body); font-size:0.95rem;">
-          <option value="">— kies een persoon —</option>
-        </select>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <div style="flex:1; min-width:200px; position:relative;">
+            <input type="text" id="gwz-persoon-search" placeholder="🔍 Typ naam of jaar…" autocomplete="off"
+                   style="width:100%; padding:0.55rem 0.65rem; border:1px solid var(--line); background:var(--paper); font-family:var(--font-body); font-size:0.95rem;">
+            <div id="gwz-persoon-suggestions" style="position:absolute; top:100%; left:0; right:0; max-height:240px; overflow-y:auto; background:var(--paper); border:1px solid var(--line); border-top:none; display:none; z-index:10;"></div>
+          </div>
+          <select id="gwz-persoon-select" style="flex:0 0 200px; padding:0.55rem 0.65rem; border:1px solid var(--line); background:var(--paper); font-family:var(--font-body); font-size:0.95rem;">
+            <option value="">— of kies uit lijst —</option>
+          </select>
+        </div>
+        <input type="hidden" id="gwz-persoon" required>
+        <div id="gwz-persoon-chosen" style="margin-top:0.4rem; font-size:0.85rem; color:var(--gray); display:none;"></div>
       </div>
       <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem;">
         <div class="login-field"><label>Jouw naam *</label><input type="text" id="gwz-aanvrager-naam" required></div>
