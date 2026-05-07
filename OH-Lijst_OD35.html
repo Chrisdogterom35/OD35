@@ -2411,6 +2411,7 @@
   <div class="stats" id="stats"></div>
   <div style="display:flex; justify-content:center; gap:0.7rem; flex-wrap:wrap; margin-top:1.2rem;">
     <button id="global-wijziging-btn" class="hero-action-btn">✎ Wijziging indienen</button>
+    <button id="invite-member-btn" class="hero-action-btn" style="background:transparent; color:var(--burgundy); border:1px solid var(--burgundy);">✉ Iemand uitnodigen</button>
   </div>
 </header>
 
@@ -3718,6 +3719,11 @@ function renderGwzSuggestions(query) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // "Iemand uitnodigen" — opent share-dialog met de inschrijflink
+  document.getElementById('invite-member-btn').addEventListener('click', () => {
+    openInviteMemberDialog();
+  });
+
   document.getElementById('global-wijziging-btn').addEventListener('click', () => {
     populateGlobalWijzPersoonSelect();
     setChosenPersoon(null);
@@ -3885,6 +3891,35 @@ document.addEventListener('click', async e => {
     alert('Kopiëren mislukt — selecteer en kopieer handmatig.');
   }
 });
+
+function openInviteMemberDialog() {
+  const inschrijfLink = window.location.origin + '/?inschrijven=1';
+  const text = `Hi,\n\nWil jij in het oud-huisgenotenregister van Oude Delft 35? Vul je gegevens in via deze link:\n\n${inschrijfLink}\n\nGroet`;
+  const subject = encodeURIComponent('Uitnodiging — registreer je bij Oude Delft 35');
+  const body = encodeURIComponent(text);
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box" style="max-width:480px;">
+      <button class="modal-close" data-close-share>✕</button>
+      <h3>Iemand uitnodigen</h3>
+      <p class="modal-sub">Stuur deze inschrijflink naar oud-huisgenoten die nog niet in de lijst staan. Ze kunnen direct hun gegevens invullen — geen wachtwoord nodig.</p>
+      <div style="margin:1rem 0; padding:0.7rem 0.9rem; background:var(--paper-warm); border:1px solid var(--line); font-family:var(--font-mono); font-size:0.85rem; word-break:break-all; user-select:all;">
+        ${escapeHtml(inschrijfLink)}
+      </div>
+      <div style="display:flex; flex-direction:column; gap:0.6rem;">
+        <a href="mailto:?subject=${subject}&body=${body}" class="share-btn share-btn-mail">📧 Open in mailprogramma</a>
+        <a href="https://wa.me/?text=${body}" target="_blank" rel="noopener" class="share-btn share-btn-wa">💬 Deel via WhatsApp</a>
+        <a href="sms:?body=${body}" class="share-btn share-btn-sms">📱 Deel via SMS</a>
+        <button type="button" class="share-btn share-btn-copy" data-share-text="${escapeHtml(text)}">📋 Kopieer tekst</button>
+        <button type="button" class="share-btn share-btn-copy" data-share-text="${escapeHtml(inschrijfLink)}">🔗 Kopieer alleen de link</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay || e.target.matches('[data-close-share]')) overlay.remove();
+  });
+}
 
 function openShareDialog(email, pw) {
   const loginUrl = window.location.origin + '/';
