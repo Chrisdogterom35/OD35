@@ -3162,12 +3162,14 @@ async function loadHuisOudsteFromDB() {
 }
 
 function getNextEvent() {
+  return getUpcomingEvents()[0] || null;
+}
+function getUpcomingEvents() {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
-  const future = eventsList
+  return eventsList
     .filter(e => new Date(e.date) >= now)
     .sort((a, b) => new Date(a.date) - new Date(b.date));
-  return future[0] || null;
 }
 
 function isHuisOudste(p) {
@@ -3470,19 +3472,24 @@ function renderDetails(p) {
     html += `</div>`;
   }
 
-  // Aanwezigheid bij volgend event
-  const nextEvent = getNextEvent();
-  if (nextEvent) {
+  // Aanwezigheid bij alle komende events
+  const upcoming = getUpcomingEvents();
+  if (upcoming.length > 0) {
     const personId = getPersonId(p);
-    const status = getAttendance(p, nextEvent.id);
     html += `<div class="attendance-section">`;
-    html += `<h4>Aanwezigheid bij volgend event</h4>`;
-    html += `<span class="attendance-event-name">${escapeHtml(nextEvent.title)} — ${formatEventDate(nextEvent.date, true)}</span>`;
-    html += `<div class="attendance-options">`;
-    html += `<button class="attendance-btn yes ${status === 'yes' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(nextEvent.id)}" data-status="yes">✓ Aanwezig</button>`;
-    html += `<button class="attendance-btn maybe ${status === 'maybe' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(nextEvent.id)}" data-status="maybe">? Misschien</button>`;
-    html += `<button class="attendance-btn no ${status === 'no' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(nextEvent.id)}" data-status="no">✗ Afwezig</button>`;
-    html += `</div></div>`;
+    html += `<h4>Aanwezigheid bij komende events</h4>`;
+    upcoming.forEach((ev, i) => {
+      const status = getAttendance(p, ev.id);
+      html += `<div class="attendance-event-block" ${i > 0 ? 'style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line-soft);"' : ''}>`;
+      html += `<span class="attendance-event-name">${escapeHtml(ev.title)} — ${formatEventDate(ev.date, true)}</span>`;
+      html += `<div class="attendance-options">`;
+      html += `<button class="attendance-btn yes ${status === 'yes' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(ev.id)}" data-status="yes">✓ Aanwezig</button>`;
+      html += `<button class="attendance-btn maybe ${status === 'maybe' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(ev.id)}" data-status="maybe">? Misschien</button>`;
+      html += `<button class="attendance-btn no ${status === 'no' ? 'active' : ''}" data-action="set-attendance" data-person-id="${escapeHtml(personId)}" data-event-id="${escapeHtml(ev.id)}" data-status="no">✗ Afwezig</button>`;
+      html += `</div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
   }
 
   // Wijzigingsformulier
@@ -3733,6 +3740,113 @@ list.addEventListener('submit', async e => {
     submitBtn.disabled = false;
     cancelBtn.disabled = false;
   }
+});
+
+// ==================== JAARGANGEN TOEVOEGEN AAN EVENT ====================
+let ajCurrentEventId = null;
+const ajSelectedYears = new Set();
+
+function openAddJaargangModal(eventId) {
+  ajCurrentEventId = eventId;
+  ajSelectedYears.clear();
+  const ev = eventsList.find(e => e.id === eventId);
+  document.getElementById('add-jaargang-eventnaam').textContent = ev ? `${ev.title} — ${formatEventDate(ev.date, true)}` : '';
+  document.getElementById('aj-overwrite').checked = false;
+  document.getElementById('aj-result').innerHTML = '';
+  document.getElementById('aj-submit').disabled = false;
+  document.getElementById('aj-submit').textContent = 'Toevoegen';
+
+  // Bouw jaargang-chips
+  const counts = {};
+  PEOPLE.forEach(p => {
+    const j = p['Aankomstjaar'];
+    if (j) counts[String(j)] = (counts[String(j)] || 0) + 1;
+  });
+  const years = Object.keys(counts).sort((a, b) => Number(b) - Number(a));
+  const grid = document.getElementById('aj-years');
+  grid.innerHTML = years.map(y => `
+    <label class="mail-year-chip" data-year="${y}">
+      <span>${y}</span><span class="count">(${counts[y]})</span>
+    </label>`).join('');
+  refreshAjSummary();
+  document.getElementById('add-jaargang-modal').classList.remove('hidden');
+}
+
+function refreshAjSummary() {
+  const peopleCount = PEOPLE.filter(p => ajSelectedYears.has(String(p['Aankomstjaar']))).length;
+  document.getElementById('aj-summary').textContent = `${ajSelectedYears.size} jaargang${ajSelectedYears.size === 1 ? '' : 'en'} · ${peopleCount} ${peopleCount === 1 ? 'persoon' : 'personen'}`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('close-add-jaargang-modal').addEventListener('click', () => {
+    document.getElementById('add-jaargang-modal').classList.add('hidden');
+  });
+
+  document.getElementById('aj-years').addEventListener('click', e => {
+    const chip = e.target.closest('.mail-year-chip');
+    if (!chip) return;
+    e.preventDefault();
+    const y = chip.dataset.year;
+    if (ajSelectedYears.has(y)) ajSelectedYears.delete(y);
+    else ajSelectedYears.add(y);
+    chip.classList.toggle('checked');
+    refreshAjSummary();
+  });
+
+  document.getElementById('aj-all').addEventListener('click', () => {
+    const chips = [...document.querySelectorAll('#aj-years .mail-year-chip')];
+    const allYears = chips.map(c => c.dataset.year);
+    const allSelected = allYears.every(y => ajSelectedYears.has(y));
+    if (allSelected) {
+      ajSelectedYears.clear();
+      chips.forEach(c => c.classList.remove('checked'));
+    } else {
+      allYears.forEach(y => ajSelectedYears.add(y));
+      chips.forEach(c => c.classList.add('checked'));
+    }
+    refreshAjSummary();
+  });
+
+  document.getElementById('aj-submit').addEventListener('click', async () => {
+    if (!ajCurrentEventId || ajSelectedYears.size === 0) return;
+    const overwrite = document.getElementById('aj-overwrite').checked;
+    const btn = document.getElementById('aj-submit');
+    const result = document.getElementById('aj-result');
+    btn.disabled = true; btn.textContent = 'Bezig…';
+    const targetPeople = PEOPLE.filter(p => ajSelectedYears.has(String(p['Aankomstjaar'])));
+    if (targetPeople.length === 0) {
+      result.innerHTML = '<span style="color:#c14040;">Geen personen gevonden.</span>';
+      btn.disabled = false; btn.textContent = 'Toevoegen';
+      return;
+    }
+    if (!confirm(`${targetPeople.length} personen markeren als 'aanwezig' bij dit event?`)) {
+      btn.disabled = false; btn.textContent = 'Toevoegen';
+      return;
+    }
+    let ok = 0, fail = 0, skipped = 0;
+    for (const p of targetPeople) {
+      const pid = getPersonId(p);
+      const existing = attendanceMap[pid] && attendanceMap[pid][ajCurrentEventId];
+      if (existing && !overwrite) { skipped++; continue; }
+      try {
+        if (!attendanceMap[pid]) attendanceMap[pid] = {};
+        attendanceMap[pid][ajCurrentEventId] = 'yes';
+        const { error } = await db.from('aanwezigheid').upsert({
+          person_id: pid, event_id: ajCurrentEventId, status: 'yes'
+        }, { onConflict: 'person_id,event_id' });
+        if (error) throw error;
+        ok++;
+      } catch (e) {
+        fail++;
+        console.warn('aanwezigheid fout:', e);
+      }
+    }
+    result.innerHTML = `<span style="color:#4a8c4a;"><strong>✓ Klaar.</strong> ${ok} toegevoegd${skipped > 0 ? `, ${skipped} overgeslagen (al status)` : ''}${fail > 0 ? `, ${fail} mislukt` : ''}.</span>`;
+    btn.textContent = 'Klaar';
+    renderEvents();
+    render();
+    setTimeout(() => document.getElementById('add-jaargang-modal').classList.add('hidden'), 1800);
+  });
 });
 
 // ==================== GLOBALE WIJZIGING-INDIENEN MODAL ====================
@@ -4640,6 +4754,12 @@ function renderEvents() {
     html += `<span>Deelnemerslijst</span>`;
     html += `<span class="deelnemers-summary">${aanwezigen.length} opgegeven · ${yesCount} aanwezig · ${paidCount} betaald</span>`;
     html += `</div>`;
+    if (isAdmin()) {
+      html += `<div style="margin:0.5rem 0 0.8rem; display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+        <button class="event-export-btn" data-action="add-jaargang" data-event-id="${escapeHtml(ev.id)}" style="background:transparent;color:var(--burgundy);border:1px dashed var(--burgundy);">+ Voeg jaargang(en) toe</button>
+        <span style="font-size:0.78rem;color:var(--gray);">Markeer iedereen uit gekozen jaargangen direct als 'aanwezig'</span>
+      </div>`;
+    }
     if (aanwezigen.length === 0) {
       html += `<p style="color:var(--gray);font-style:italic;font-size:0.85rem;">Nog niemand opgegeven.</p>`;
     } else {
@@ -4712,6 +4832,11 @@ document.getElementById('event-form').addEventListener('submit', async e => {
   render();
 });
 document.getElementById('event-list').addEventListener('click', e => {
+  // Jaargang toevoegen (heeft data-action; check VOOR de generieke export-btn)
+  if (e.target.matches('[data-action="add-jaargang"]')) {
+    openAddJaargangModal(e.target.dataset.eventId);
+    return;
+  }
   if (e.target.matches('.event-delete')) {
     const id = e.target.dataset.eventId;
     if (confirm('Event verwijderen? Aanwezigheid van huisgenoten voor dit event blijft bewaard.')) {
@@ -4720,11 +4845,13 @@ document.getElementById('event-list').addEventListener('click', e => {
       renderEvents();
       render();
     }
+    return;
   }
   if (e.target.matches('.event-lijst-toggle')) {
     const id = e.target.dataset.eventId;
     const panel = document.getElementById('deelnemers-' + id);
     if (panel) panel.classList.toggle('open');
+    return;
   }
   if (e.target.matches('.event-export-btn')) {
     exportEventExcel(e.target.dataset.eventId);
@@ -6259,6 +6386,30 @@ async function submitAlbumForm() {
       <div style="font-size:0.72rem;color:var(--gray);font-family:Inter,sans-serif">modern hotel · staalblauw</div>
     </div>
   </button>
+</div>
+
+<!-- Jaargangen toevoegen aan event modal -->
+<div class="modal-overlay hidden" id="add-jaargang-modal">
+  <div class="modal-box" style="max-width:520px;">
+    <button class="modal-close" id="close-add-jaargang-modal">✕</button>
+    <h3>Jaargangen toevoegen aan event</h3>
+    <p class="modal-sub" id="add-jaargang-eventnaam"></p>
+    <div style="margin-top:0.7rem; padding:0.6rem 0.8rem; background:var(--paper-warm); border-left:3px solid var(--burgundy); font-size:0.85rem;">
+      Iedereen uit de gekozen jaargangen wordt als <strong>aanwezig</strong> gemarkeerd. Bestaande "afwezig" of "misschien" status blijft behouden tenzij je 'overschrijven' aanvinkt.
+    </div>
+    <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+      <button type="button" id="aj-all" class="mail-toggle-all">Alle/geen</button>
+      <label style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.85rem; margin-left:auto;">
+        <input type="checkbox" id="aj-overwrite"> Overschrijf bestaande statussen
+      </label>
+    </div>
+    <div id="aj-years" style="margin-top:0.7rem; display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:0.4rem; max-height:320px; overflow-y:auto; padding:0.4rem; border:1px solid var(--line);"></div>
+    <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center;">
+      <span id="aj-summary" style="font-size:0.85rem; color:var(--gray);">0 jaargangen, 0 personen</span>
+      <button type="button" class="login-btn" id="aj-submit" style="width:auto; padding:0.6rem 1.4rem;">Toevoegen</button>
+    </div>
+    <div id="aj-result" style="margin-top:0.6rem; font-size:0.85rem;"></div>
+  </div>
 </div>
 
 <!-- Globale Wijziging-indienen modal -->
