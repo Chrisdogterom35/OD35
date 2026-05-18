@@ -2618,12 +2618,44 @@
 <div class="tab-panel" id="panel-adminbeheer">
   <div class="wijz-header">
     <h2>Admin-beheer</h2>
-    <button id="invite-admin-btn" class="export-btn" style="background:var(--burgundy); color:var(--paper); border:none;">+ Nieuwe admin uitnodigen</button>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <button id="invite-admin-btn" class="export-btn" style="background:var(--burgundy); color:var(--paper); border:none;">+ Nieuwe admin uitnodigen</button>
+      <button id="clean-emails-btn" class="export-btn" style="background:transparent; color:var(--burgundy); border:1px solid var(--burgundy);">🧹 Ongeldige e-mails opschonen</button>
+    </div>
   </div>
   <p style="color:var(--gray); font-size:0.88rem; margin-bottom:1rem;">
     Hier zie je alle admins en kun je nieuwe admins toevoegen. Alleen jij als <strong>hoofdadmin</strong> hebt toegang tot deze pagina.
   </p>
   <div id="admin-list" class="wijz-list"></div>
+</div>
+
+<!-- E-mails opschonen modal -->
+<div class="modal-overlay hidden" id="clean-emails-modal">
+  <div class="modal-box wide">
+    <button class="modal-close" id="close-clean-emails-modal">✕</button>
+    <h3>Ongeldige e-mails opschonen</h3>
+    <p class="modal-sub">Plak hieronder de bounce-mails of een lijst e-mailadressen. Het systeem haalt automatisch alle adressen eruit en zoekt ze op in de ledenlijst.</p>
+
+    <div class="login-field">
+      <label>Plak hier (bounce-mails of adressen, scheidingstekens maken niet uit)</label>
+      <textarea id="clean-input" rows="8" style="width:100%; padding:0.55rem; border:1px solid var(--line); background:var(--paper); font-family:var(--font-mono); font-size:0.82rem;" placeholder="Plak hier de bounce-notificaties van je mailprogramma, of gewoon een lijst e-mailadressen…"></textarea>
+    </div>
+
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <button type="button" id="clean-extract" class="login-btn" style="width:auto;padding:0.5rem 1rem;">Adressen herkennen →</button>
+    </div>
+
+    <div id="clean-preview" style="margin-top:1rem; display:none;">
+      <h4 style="margin-bottom:0.5rem;">Gevonden adressen</h4>
+      <div id="clean-stats" style="font-size:0.85rem; color:var(--gray); margin-bottom:0.5rem;"></div>
+      <div id="clean-list" style="max-height:280px; overflow-y:auto; border:1px solid var(--line); padding:0.5rem; background:var(--paper); font-size:0.85rem;"></div>
+      <p style="font-size:0.8rem;color:var(--gray);margin-top:0.5rem;">Vinkjes uit voor adressen die je <strong>wel</strong> wilt behouden. Default: alle adressen die in de DB staan worden verwijderd.</p>
+      <div style="display:flex; gap:0.5rem; margin-top:0.7rem;">
+        <button type="button" id="clean-execute" class="login-btn" style="background:#c14040;width:auto;padding:0.6rem 1.2rem;">Verwijder geselecteerde adressen</button>
+      </div>
+      <div id="clean-result" style="margin-top:0.6rem;"></div>
+    </div>
+  </div>
 </div>
 
 <!-- Admin uitnodigen modal -->
@@ -3740,6 +3772,116 @@ list.addEventListener('submit', async e => {
     submitBtn.disabled = false;
     cancelBtn.disabled = false;
   }
+});
+
+// ==================== ONGELDIGE E-MAILS OPSCHONEN ====================
+let cleanFoundMatches = []; // [{email, persoon, field}]
+
+function extractEmailsFromText(text) {
+  const re = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const found = (text.match(re) || []).map(e => e.toLowerCase());
+  // Filter typische bounce-server adressen weg
+  const noiseDomains = ['mailer-daemon', 'postmaster', 'noreply', 'no-reply', 'bounce', 'mail-daemon', 'mailerdaemon'];
+  return [...new Set(found)].filter(e => {
+    const local = e.split('@')[0];
+    return !noiseDomains.some(n => local.includes(n));
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('clean-emails-btn').addEventListener('click', () => {
+    document.getElementById('clean-input').value = '';
+    document.getElementById('clean-preview').style.display = 'none';
+    document.getElementById('clean-result').innerHTML = '';
+    cleanFoundMatches = [];
+    document.getElementById('clean-emails-modal').classList.remove('hidden');
+  });
+  document.getElementById('close-clean-emails-modal').addEventListener('click', () => {
+    document.getElementById('clean-emails-modal').classList.add('hidden');
+  });
+
+  document.getElementById('clean-extract').addEventListener('click', () => {
+    const text = document.getElementById('clean-input').value;
+    if (!text.trim()) { alert('Plak eerst tekst.'); return; }
+    const emails = extractEmailsFromText(text);
+    // Filter alleen adressen die in de DB staan
+    cleanFoundMatches = [];
+    emails.forEach(em => {
+      for (const p of PEOPLE) {
+        for (let i = 1; i <= 5; i++) {
+          const v = (p[`E-mail ${i}`] || '').trim().toLowerCase();
+          if (v === em) {
+            const naam = [p['Voorletters'], p['Tussenvoegsel'], p['Achternaam']].filter(Boolean).join(' ').trim();
+            cleanFoundMatches.push({
+              email: em,
+              personId: p._id,
+              persoonNaam: naam,
+              aankomstjaar: p['Aankomstjaar'],
+              fieldNumber: i,
+            });
+          }
+        }
+      }
+    });
+    const notFound = emails.filter(em => !cleanFoundMatches.some(m => m.email === em));
+    document.getElementById('clean-stats').innerHTML = `
+      <strong>${emails.length}</strong> uniek adres herkend in plak-tekst ·
+      <strong style="color:#c14040">${cleanFoundMatches.length}</strong> staan in de DB ·
+      <strong>${notFound.length}</strong> niet gevonden in DB`;
+    if (cleanFoundMatches.length === 0) {
+      document.getElementById('clean-list').innerHTML = '<div style="color:var(--gray);font-style:italic;padding:0.5rem;">Geen van deze adressen staat in de ledenlijst — niets te verwijderen.</div>';
+      document.getElementById('clean-execute').style.display = 'none';
+    } else {
+      document.getElementById('clean-execute').style.display = '';
+      document.getElementById('clean-list').innerHTML = cleanFoundMatches.map((m, i) => `
+        <label style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid var(--line-soft);">
+          <input type="checkbox" data-clean-idx="${i}" checked>
+          <code style="font-family:var(--font-mono);font-size:0.82rem;color:#c14040;">${escapeHtml(m.email)}</code>
+          <span style="color:var(--gray);font-size:0.82rem;">→ ${escapeHtml(m.persoonNaam)}${m.aankomstjaar ? ' ('+m.aankomstjaar+')' : ''} (E-mail ${m.fieldNumber})</span>
+        </label>`).join('');
+    }
+    document.getElementById('clean-preview').style.display = 'block';
+  });
+
+  document.getElementById('clean-execute').addEventListener('click', async () => {
+    const checks = [...document.querySelectorAll('#clean-list input[type="checkbox"]:checked')];
+    const toRemove = checks.map(c => cleanFoundMatches[Number(c.dataset.cleanIdx)]);
+    if (toRemove.length === 0) { alert('Niets geselecteerd.'); return; }
+    if (!confirm(`${toRemove.length} e-mailadres${toRemove.length === 1 ? '' : 'sen'} definitief uit de ledenlijst verwijderen?`)) return;
+
+    const btn = document.getElementById('clean-execute');
+    btn.disabled = true; btn.textContent = 'Bezig…';
+    const result = document.getElementById('clean-result');
+    result.innerHTML = '';
+
+    // Groepeer per persoon: bij meerdere adressen in 1 rij doen we 1 update
+    const perPerson = {};
+    toRemove.forEach(m => {
+      if (!perPerson[m.personId]) perPerson[m.personId] = [];
+      perPerson[m.personId].push(m.fieldNumber);
+    });
+
+    let ok = 0, fail = 0;
+    for (const [pid, fields] of Object.entries(perPerson)) {
+      const patch = {};
+      fields.forEach(n => { patch[`email_${n}`] = null; });
+      try {
+        const { error } = await db.from('personen').update(patch).eq('id', pid);
+        if (error) throw error;
+        // Update lokaal
+        const p = PEOPLE.find(x => x._id === pid);
+        if (p) fields.forEach(n => { p[`E-mail ${n}`] = ''; });
+        ok += fields.length;
+      } catch (e) {
+        fail += fields.length;
+        console.warn('cleanup fout:', e);
+      }
+    }
+    result.innerHTML = `<span style="color:#4a8c4a;"><strong>✓ Klaar.</strong> ${ok} adres${ok === 1 ? '' : 'sen'} verwijderd${fail > 0 ? `, ${fail} mislukt` : ''}.</span>`;
+    btn.textContent = 'Klaar';
+    PEOPLE.forEach(p => { p._searchText = buildSearchText(p); });
+    render();
+  });
 });
 
 // ==================== JAARGANGEN TOEVOEGEN AAN EVENT ====================
